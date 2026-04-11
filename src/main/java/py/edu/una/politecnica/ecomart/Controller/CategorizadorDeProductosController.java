@@ -1,4 +1,4 @@
-package com.aluracursos.ecomart.Controller;
+package py.edu.una.politecnica.ecomart.Controller;
 
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.ModelType;

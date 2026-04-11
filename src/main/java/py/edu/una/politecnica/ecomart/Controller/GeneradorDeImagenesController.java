@@ -1,4 +1,4 @@
-package com.aluracursos.ecomart.Controller;
+package py.edu.una.politecnica.ecomart.Controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.image.ImageModel;
