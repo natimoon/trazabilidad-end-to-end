@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecomart AI - Trazabilidad End-to-End</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #0a0e17;
+            color: #e0e7ff;
+            overflow-x: hidden;
+        }
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .bg-glow {
+            position: fixed;
+            top: -30%;
+            left: -10%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(16, 185, 129, 0.12), transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            animation: floatGlow 12s ease-in-out infinite;
+        }
+        .bg-glow-2 {
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(ellipse, rgba(59, 130, 246, 0.1), transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            animation: floatGlow 15s ease-in-out infinite reverse;
+        }
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.05); }
+        }
+
+        .content { position: relative; z-index: 1; }
+
+        .navbar-custom {
+            background: rgba(10, 14, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        .navbar-custom .brand {
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .status-badge.online {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .status-dot.green { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .hero-section {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        .hero-section h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e0e7ff 0%, #10b981 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+        .hero-section .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 24px;
+        }
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .hero-badges .badge {
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-weight: 500;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+
+        .card-dashboard {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+        .card-dashboard:hover {
+            border-color: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .card-dashboard .card-header-custom {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-dashboard .card-body-custom {
+            padding: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px 16px;
+        }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.4rem;
+        }
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .api-card {
+            height: 100%;
+        }
+        .api-card .api-path {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: #64748b;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .api-card .api-desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 8px 0 14px;
+        }
+        .api-card .btn-test {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .api-card .btn-test:active { transform: scale(0.96); }
+        .api-result {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            max-height: 160px;
+            overflow-y: auto;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #94a3b8;
+        }
+        .api-result.show { display: block; }
+        .api-result.loading {
+            display: block;
+            color: #64748b;
+            font-family: 'Inter', sans-serif;
+        }
+        .api-result.loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px; height: 12px;
+            border: 2px solid #3b82f6;
+            border-top-color: transparent;
+            border-radius: 50%;
+            margin-left: 8px;
+            vertical-align: middle;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .lb-visualization {
+            position: relative;
+            padding: 20px 0;
+        }
+        .lb-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .lb-node {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+        }
+        .lb-node.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+        }
+        .lb-arrow {
+            color: #3b82f6;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+        .lb-instance-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 16px;
+        }
+        .lb-instance {
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 140px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
+            transition: all 0.3s;
+        }
+        .lb-instance.hit {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+        }
+        .lb-instance .instance-port {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .lb-instance .instance-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .lb-counter {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .instance-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .instance-info-item {
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .instance-info-item .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .instance-info-item .value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 24px 0;
+            margin-top: 60px;
+            text-align: center;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+        footer strong { color: #94a3b8; }
+
+        @media (max-width: 768px) {
+            .hero-section h1 { font-size: 2rem; }
+            .instance-info-grid { grid-template-columns: 1fr; }
+            .lb-instance-row { flex-direction: column; align-items: center; }
+            .lb-flow { flex-direction: column; }
+            .lb-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow-2"></div>
+
+<div class="content">
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <a class="navbar-brand brand fw-bold fs-4" href="/">Ecomart AI</a>
+            <div class="d-flex align-items-center gap-2">
+                <span class="status-badge online">
+                    <span class="status-dot green"></span>
+                    <span id="statusText">Verificando...</span>
+                </span>
+                <a href="/swagger-ui/index.html" class="btn btn-outline-light btn-sm rounded-pill px-3" style="border-color:rgba(255,255,255,0.15);">
+                    Swagger
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1>Arquitectura Web Moderna</h1>
+            <p class="subtitle">
+                Sistema inteligente de procesamiento de consultas con IA,
+                balanceo de carga NGINX y trazabilidad end-to-end.
+            </p>
+            <div class="hero-badges">
+                <span class="badge"> Java 21 + Spring Boot 3</span>
+                <span class="badge"> NGINX Round Robin</span>
+                <span class="badge"> PostgreSQL</span>
+                <span class="badge"> OpenAI GPT-4o</span>
+                <span class="badge"> Railway Cloud</span>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-3 col-6">
+                <div class="card-dashboard stat-card">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:#10b981;">⚡</div>
+                    <div class="stat-value" id="throughput">-</div>
+                    <div class="stat-label">Rendimiento</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card-dashboard stat-card">
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:#3b82f6;">🖥️</div>
+                    <div class="stat-value" id="instancia-actual">-</div>
+                    <div class="stat-label">Instancia activa</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card-dashboard stat-card">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b;">🔀</div>
+                    <div class="stat-value" id="round-robin-count">0</div>
+                    <div class="stat-label">Peticiones distribuidas</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card-dashboard stat-card">
+                    <div class="stat-icon" style="background:rgba(168,85,247,0.12);color:#a855f7;">📡</div>
+                    <div class="stat-value" id="uptime">-</div>
+                    <div class="stat-label">Estado del servidor</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="card-dashboard">
+                    <div class="card-header-custom">
+                        <span>🤖</span> Endpoints de la API
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card-dashboard api-card" style="background:rgba(16,185,129,0.04);border-color:rgba(16,185,129,0.15);">
+                                    <div style="padding:16px;">
+                                        <span class="api-path">GET /generador</span>
+                                        <div class="api-desc">Genera 5 productos ecologicos con IA</div>
+                                        <button class="btn btn-success btn-test w-100" onclick="testEndpoint('generador')">
+                                            Probar
+                                        </button>
+                                        <div class="api-result" id="result-generador"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-dashboard api-card" style="background:rgba(59,130,246,0.04);border-color:rgba(59,130,246,0.15);">
+                                    <div style="padding:16px;">
+                                        <span class="api-path">GET /categorizador</span>
+                                        <div class="api-desc">Clasifica un producto en 4 categorias</div>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" class="form-control form-control-sm" id="input-categorizador"
+                                                   value="Pelota de futbol" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;font-size:0.8rem;">
+                                        </div>
+                                        <button class="btn btn-primary btn-test w-100" onclick="testEndpoint('categorizador')">
+                                            Probar
+                                        </button>
+                                        <div class="api-result" id="result-categorizador"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-dashboard api-card" style="background:rgba(168,85,247,0.04);border-color:rgba(168,85,247,0.15);">
+                                    <div style="padding:16px;">
+                                        <span class="api-path">GET /imagen</span>
+                                        <div class="api-desc">Genera una imagen con DALL-E desde un prompt</div>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" class="form-control form-control-sm" id="input-imagen"
+                                                   value="Producto ecologico" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;font-size:0.8rem;">
+                                        </div>
+                                        <button class="btn btn-test w-100" style="background:rgba(168,85,247,0.2);color:#a855f7;border:1px solid rgba(168,85,247,0.3);" onclick="testEndpoint('imagen')">
+                                            Probar
+                                        </button>
+                                        <div class="api-result" id="result-imagen"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-dashboard">
+                    <div class="card-header-custom">
+                        <span>📋</span> Info de la Instancia
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="instance-info-grid">
+                            <div class="instance-info-item">
+                                <div class="label">Servidor</div>
+                                <div class="value" id="info-server">-</div>
+                            </div>
+                            <div class="instance-info-item">
+                                <div class="label">Puerto</div>
+                                <div class="value" id="info-puerto">-</div>
+                            </div>
+                            <div class="instance-info-item">
+                                <div class="label">Estado</div>
+                                <div class="value" style="color:#10b981;" id="info-estado">-</div>
+                            </div>
+                            <div class="instance-info-item">
+                                <div class="label">App</div>
+                                <div class="value" id="info-app">-</div>
+                            </div>
+                        </div>
+                        <hr style="border-color:rgba(255,255,255,0.06);margin:16px 0;">
+                        <button class="btn btn-outline-light btn-sm w-100" onclick="fetchInstanceInfo()" style="border-color:rgba(255,255,255,0.1);">
+                            🔄 Refrescar informacion
+                        </button>
+                        <button class="btn btn-outline-light btn-sm w-100 mt-2" onclick="testLoadBalancer()" style="border-color:rgba(255,255,255,0.1);">
+                            🔀 Probar balanceo (10 requests)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-dashboard mb-5">
+            <div class="card-header-custom">
+                <span>🔀</span> Visualizacion del Balanceador de Carga
+            </div>
+            <div class="card-body-custom">
+                <div class="lb-visualization">
+                    <div class="lb-flow">
+                        <div class="lb-node active">🌐 Usuarios</div>
+                        <div class="lb-arrow">→</div>
+                        <div class="lb-node" style="border-color:#3b82f6;background:rgba(59,130,246,0.1);" id="lb-node-nginx">
+                            🔄 NGINX Round Robin <br><small style="color:#64748b;">puerto 8080</small>
+                        </div>
+                        <div class="lb-arrow" id="lb-arrow">→</div>
+                        <div class="lb-node" style="border-color:#f59e0b;" id="lb-node-target">
+                            ⚡ Instancia
+                        </div>
+                    </div>
+                    <div class="lb-instance-row">
+                        <div class="lb-instance" id="inst-1">
+                            <div class="instance-label">Instancia 1</div>
+                            <div class="instance-port" style="color:#10b981;">8081</div>
+                            <div class="instance-label" id="inst-1-count">0 requests</div>
+                        </div>
+                        <div class="lb-instance" id="inst-2">
+                            <div class="instance-label">Instancia 2</div>
+                            <div class="instance-port" style="color:#3b82f6;">8082</div>
+                            <div class="instance-label" id="inst-2-count">0 requests</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small style="color:#475569;">Algoritmo: Round Robin — Las peticiones se distribuyen equitativamente entre ambas instancias</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-dashboard mb-5">
+            <div class="card-header-custom">
+                <span>📊</span> Prueba de Estres con JMeter
+            </div>
+            <div class="card-body-custom">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-7">
+                        <p style="color:#94a3b8;font-size:0.9rem;">
+                            El plan de pruebas <code style="color:#10b981;">load-test-plan.jmx</code> simula
+                            <strong style="color:#e0e7ff;">1,000 usuarios concurrentes</strong> durante 30 segundos
+                            de ramp-up, generando <strong style="color:#e0e7ff;">10,000 peticiones</strong> totales
+                            contra el balanceador NGINX.
+                        </p>
+                        <div style="font-size:0.85rem;color:#64748b;">
+                            <div>▶ 40% trafico → <strong style="color:#e0e7ff;">/generador</strong> (productos ecologicos)</div>
+                            <div>▶ 30% trafico → <strong style="color:#e0e7ff;">/categorizador</strong> (clasificacion)</div>
+                            <div>▶ 30% trafico → <strong style="color:#e0e7ff;">/imagen</strong> (generacion visual)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 text-center">
+                        <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06);">
+                            <div style="font-size:2rem;font-weight:800;color:#f59e0b;" id="jmeter-users">1,000</div>
+                            <div style="color:#64748b;font-size:0.85rem;">Usuarios Concurrentes</div>
+                            <hr style="border-color:rgba(255,255,255,0.06);margin:12px 0;">
+                            <div style="font-size:1.2rem;font-weight:600;color:#10b981;" id="jmeter-requests">10,000</div>
+                            <div style="color:#64748b;font-size:0.85rem;">Peticiones Totales</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <strong>Trabajo Practico Integrador</strong> — Arquitectura Web 2026 &middot;
+            Prof. Rodrigo Benitez &middot;
+            Natalia Godoy &amp; Noelia Insfran &middot;
+            <span style="color:#3b82f6;">FP-UNA</span>
+        </div>
+    </footer>
+</div>
+
+<script>
+let rrCount = 0;
+let inst1Count = 0;
+let inst2Count = 0;
+let lastInstance = '';
+
+async function fetchStatus() {
+    try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        document.getElementById('statusText').textContent = 'En linea';
+        document.getElementById('uptime').textContent = 'Online';
+        document.getElementById('info-server').textContent = window.location.hostname;
+        document.getElementById('info-puerto').textContent = data.puerto || '-';
+        document.getElementById('info-estado').textContent = data.status || 'UP';
+        document.getElementById('info-app').textContent = data.aplicacion || '-';
+        document.getElementById('instancia-actual').textContent = data.puerto || '-';
+    } catch {
+        document.getElementById('statusText').textContent = 'Sin conexion';
+        document.getElementById('uptime').textContent = 'Offline';
+        document.getElementById('statusText').parentElement.className = 'status-badge';
+        document.getElementById('statusText').parentElement.style.cssText = 'background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:500;';
+    }
+}
+
+async function fetchInstanceInfo() {
+    try {
+        const res = await fetch('/instancia');
+        const data = await res.json();
+        document.getElementById('info-server').textContent = window.location.hostname;
+        document.getElementById('info-puerto').textContent = data.puerto || '-';
+        document.getElementById('info-estado').textContent = data.estado || '-';
+        document.getElementById('info-app').textContent = data.aplicacion || '-';
+        document.getElementById('instancia-actual').textContent = data.puerto || '-';
+        return data;
+    } catch {
+        return null;
+    }
+}
+
+async function testEndpoint(endpoint) {
+    const resultDiv = document.getElementById(`result-${endpoint}`);
+    resultDiv.className = 'api-result loading';
+    resultDiv.textContent = 'Consultando...';
+
+    let url = `/${endpoint}`;
+    if (endpoint === 'categorizador') {
+        const input = document.getElementById('input-categorizador').value;
+        url += `?producto=${encodeURIComponent(input)}`;
+    } else if (endpoint === 'imagen') {
+        const input = document.getElementById('input-imagen').value;
+        url += `?prompt=${encodeURIComponent(input)}`;
+    }
+
+    try {
+        const res = await fetch(url);
+        const text = await res.text();
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = text || '(respuesta vacia)';
+
+        rrCount++;
+        document.getElementById('round-robin-count').textContent = rrCount;
+
+        const instData = await fetchInstanceInfo();
+        if (instData && instData.puerto) {
+            const port = instData.puerto;
+            document.getElementById('lb-node-target').innerHTML = `⚡ ${instData.instancia || 'Instancia ' + port}`;
+
+            if (lastInstance && lastInstance !== port) {
+                document.getElementById('lb-arrow').style.color = '#f59e0b';
+                setTimeout(() => document.getElementById('lb-arrow').style.color = '', 500);
+            }
+            lastInstance = port;
+
+            if (port === '8081') {
+                inst1Count++;
+                document.getElementById('inst-1-count').textContent = inst1Count + ' requests';
+                document.getElementById('inst-1').classList.add('hit');
+                setTimeout(() => document.getElementById('inst-1').classList.remove('hit'), 400);
+            } else if (port === '8082') {
+                inst2Count++;
+                document.getElementById('inst-2-count').textContent = inst2Count + ' requests';
+                document.getElementById('inst-2').classList.add('hit');
+                setTimeout(() => document.getElementById('inst-2').classList.remove('hit'), 400);
+            }
+        }
+    } catch {
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = 'Error al conectar con el servidor';
+    }
+}
+
+async function testLoadBalancer() {
+    for (let i = 0; i < 10; i++) {
+        try {
+            const res = await fetch('/instancia');
+            const data = await res.json();
+            const port = data.puerto;
+
+            rrCount++;
+            document.getElementById('round-robin-count').textContent = rrCount;
+            document.getElementById('lb-node-target').innerHTML = `⚡ ${data.instancia || 'Instancia ' + port}`;
+
+            if (port === '8081') {
+                inst1Count++;
+                document.getElementById('inst-1-count').textContent = inst1Count + ' requests';
+                document.getElementById('inst-1').classList.add('hit');
+                setTimeout(() => document.getElementById('inst-1').classList.remove('hit'), 300);
+            } else if (port === '8082') {
+                inst2Count++;
+                document.getElementById('inst-2-count').textContent = inst2Count + ' requests';
+                document.getElementById('inst-2').classList.add('hit');
+                setTimeout(() => document.getElementById('inst-2').classList.remove('hit'), 300);
+            }
+
+            document.getElementById('lb-arrow').style.color = '#10b981';
+            setTimeout(() => document.getElementById('lb-arrow').style.color = '', 300);
+        } catch {}
+        await new Promise(r => setTimeout(r, 400));
+    }
+}
+
+fetchStatus();
+fetchInstanceInfo();
+setInterval(fetchStatus, 30000);
+setInterval(fetchInstanceInfo, 15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  app-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecomart-instancia-1
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_AI_OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/ecomart
+      - SPRING_DATASOURCE_USERNAME=ecomart
+      - SPRING_DATASOURCE_PASSWORD=ecomart123
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ecomart-net
+
+  app-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecomart-instancia-2
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_AI_OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/ecomart
+      - SPRING_DATASOURCE_USERNAME=ecomart
+      - SPRING_DATASOURCE_PASSWORD=ecomart123
+    ports:
+      - "8082:8082"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ecomart-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: ecomart-balanceador
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx-docker.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-1
+      - app-2
+    networks:
+      - ecomart-net
+
+  db:
+    image: postgres:16-alpine
+    container_name: ecomart-db
+    environment:
+      - POSTGRES_DB=ecomart
+      - POSTGRES_USER=ecomart
+      - POSTGRES_PASSWORD=ecomart123
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecomart"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecomart-net
+
+networks:
+  ecomart-net:
+    driver: bridge
