@@ -1,2 +1,5 @@
 GUIA_DEFENSA.md
 .DS_Store
+*.pdf
+*.docx
+~$*
