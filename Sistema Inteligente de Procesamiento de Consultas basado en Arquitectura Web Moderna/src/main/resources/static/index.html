@@ -538,6 +538,57 @@
 
         <div class="card-dashboard mb-5">
             <div class="card-header-custom">
+                <span>📦</span> CRUD de Productos (API REST)
+            </div>
+            <div class="card-body-custom">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card-dashboard" style="background:rgba(16,185,129,0.04);border-color:rgba(16,185,129,0.15);padding:16px;">
+                            <h6 style="color:#10b981;font-weight:600;margin-bottom:12px;">✚ Crear Producto</h6>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="input-nombre"
+                                       placeholder="Nombre" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="input-descripcion"
+                                       placeholder="Descripcion" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="input-categoria"
+                                       placeholder="Categoria" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
+                            </div>
+                            <button class="btn btn-success btn-test w-100" onclick="crearProducto()">
+                                POST /api/productos
+                            </button>
+                            <div class="api-result" id="result-crear"></div>
+                        </div>
+                        <div class="card-dashboard mt-3" style="background:rgba(59,130,246,0.04);border-color:rgba(59,130,246,0.15);padding:16px;">
+                            <h6 style="color:#3b82f6;font-weight:600;margin-bottom:12px;">🔍 Buscar por ID</h6>
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="number" class="form-control" id="input-buscar-id"
+                                       placeholder="ID" value="1" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
+                                <button class="btn btn-primary" onclick="buscarProducto()">GET</button>
+                            </div>
+                            <div class="api-result" id="result-buscar"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-dashboard" style="background:rgba(168,85,247,0.04);border-color:rgba(168,85,247,0.15);padding:16px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 style="color:#a855f7;font-weight:600;margin:0;">📋 Lista de Productos</h6>
+                                <button class="btn btn-outline-light btn-sm" onclick="listarProductos()" style="border-color:rgba(255,255,255,0.1);">
+                                    🔄 Refrescar
+                                </button>
+                            </div>
+                            <div style="max-height:300px;overflow-y:auto;" id="productos-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-dashboard mb-5">
+            <div class="card-header-custom">
                 <span>📊</span> Prueba de Estres con JMeter
             </div>
             <div class="card-body-custom">
@@ -701,8 +752,96 @@ async function testLoadBalancer() {
     }
 }
 
+async function listarProductos() {
+    const listDiv = document.getElementById('productos-list');
+    listDiv.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Cargando...</div>';
+    try {
+        const res = await fetch('/api/productos');
+        const productos = await res.json();
+        if (productos.length === 0) {
+            listDiv.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">No hay productos</div>';
+            return;
+        }
+        let html = '<table style="width:100%;font-size:0.85rem;border-collapse:collapse;">';
+        html += '<tr style="color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06);">';
+        html += '<th style="padding:8px 4px;text-align:left;">ID</th><th style="padding:8px 4px;text-align:left;">Nombre</th>';
+        html += '<th style="padding:8px 4px;text-align:left;">Categoria</th><th style="padding:8px 4px;text-align:right;">Accion</th></tr>';
+        for (const p of productos) {
+            html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">`;
+            html += `<td style="padding:8px 4px;">${p.id}</td>`;
+            html += `<td style="padding:8px 4px;">${p.nombre || '-'}</td>`;
+            html += `<td style="padding:8px 4px;">${p.categoria || '-'}</td>`;
+            html += `<td style="padding:8px 4px;text-align:right;">
+                <button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarProducto(${p.id})">🗑</button>
+            </td></tr>`;
+        }
+        html += '</table>';
+        listDiv.innerHTML = html;
+        document.getElementById('result-crear').className = 'api-result';
+        document.getElementById('result-crear').textContent = '';
+    } catch {
+        listDiv.innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar productos</div>';
+    }
+}
+
+async function crearProducto() {
+    const nombre = document.getElementById('input-nombre').value.trim();
+    const descripcion = document.getElementById('input-descripcion').value.trim();
+    const categoria = document.getElementById('input-categoria').value.trim();
+    const resultDiv = document.getElementById('result-crear');
+
+    if (!nombre) { resultDiv.className = 'api-result show'; resultDiv.textContent = '⚠ El nombre es obligatorio'; return; }
+
+    resultDiv.className = 'api-result loading';
+    resultDiv.textContent = 'Creando...';
+
+    try {
+        const res = await fetch('/api/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, descripcion, categoria })
+        });
+        const data = await res.json();
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = `✅ Creado: ID ${data.id} - ${data.nombre}`;
+        document.getElementById('input-nombre').value = '';
+        document.getElementById('input-descripcion').value = '';
+        document.getElementById('input-categoria').value = '';
+        listarProductos();
+    } catch {
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = '❌ Error al crear producto';
+    }
+}
+
+async function buscarProducto() {
+    const id = document.getElementById('input-buscar-id').value;
+    const resultDiv = document.getElementById('result-buscar');
+    resultDiv.className = 'api-result loading';
+    resultDiv.textContent = 'Buscando...';
+    try {
+        const res = await fetch(`/api/productos/${id}`);
+        if (!res.ok) { resultDiv.className = 'api-result show'; resultDiv.textContent = '❌ Producto no encontrado'; return; }
+        const data = await res.json();
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = `✅ ID ${data.id}: ${data.nombre} | ${data.categoria} | ${data.descripcion || ''}`;
+    } catch {
+        resultDiv.className = 'api-result show';
+        resultDiv.textContent = '❌ Error al buscar';
+    }
+}
+
+async function eliminarProducto(id) {
+    if (!confirm(`Eliminar producto ${id}?`)) return;
+    try {
+        await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+        listarProductos();
+    } catch {}
+}
+
 fetchStatus();
 fetchInstanceInfo();
+listarProductos();
 setInterval(fetchStatus, 30000);
 setInterval(fetchInstanceInfo, 15000);
 </script>
