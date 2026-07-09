@@ -1,7 +1,7 @@
 <div align="center">
   <h1>🌿 Sistema IA Ecomart: Trazabilidad e Infraestructura Distribuida</h1>
   <p><b>Laboratorio Experimental de Arquitecturas Web Modernas</b></p>
-  <p><i>Proyecto Integrador Completo (Etapas 1 y 2)</i></p>
+  <p><i>Proyecto Integrador Completo (Etapas 1, 2 y Entrega Final)</i></p>
   <p><b>Facultad Politécnica (FP-UNA)</b></p>
   <hr>
   <p>👨‍🏫 <b>Profesor:</b> Rodrigo Benítez</p>
@@ -26,6 +26,7 @@ El sistema integra las siguientes tecnologías distribuidas en sus dos fases de 
 | **Cloud/Edge (Etapa 1)** | ![Railway](https://img.shields.io/badge/Cloud-Railway-7E33FF?logo=railway) ![Fastly](https://img.shields.io/badge/CDN-Fastly-red?logo=fastly) | Terminación TLS regional en nodo **GRU (Brasil)** para reducción de latencia en producción. |
 | **Seguridad (Etapa 1)** | ![TLS](https://img.shields.io/badge/Security-TLS_1.3-blue) ![SSL](https://img.shields.io/badge/Cert-Let's_Encrypt-003366) | Negociación forzada de cifrado y headers de seguridad nativos. |
 | **Pruebas (Etapa 2)** | ![JMeter](https://img.shields.io/badge/Apache-JMeter-D22128?logo=apachejmeter) | Entorno experimental para pruebas de estrés, latencias y tolerancia a fallos (*Failover*). |
+| **API REST (Entrega Final)** | CRUD Completo | Endpoints GET, POST, PUT, DELETE para gestión de productos con auto-categorización por IA. |
 
 ---
 
@@ -39,6 +40,12 @@ El sistema integra las siguientes tecnologías distribuidas en sus dos fases de 
 ### 🛠️ Módulos de la Etapa 2 (Infraestructura Local & Balanceo)
 * **Alta Disponibilidad y Failover Pasivo:** Configuración de directivas de tiempo de espera (`proxy_connect_timeout` y `proxy_read_timeout`) en NGINX para mitigar la degradación del servicio ante caídas de nodos en pleno procesamiento de ráfagas.
 * **Evaluación bajo Estrés:** Recopilación de métricas clave (Percentiles P50, P90, P99 y Tasa de Error %) a través de planes de pruebas concurrentes en JMeter para identificar cuellos de botella sistémicos.
+
+### 🏁 Módulos de la Entrega Final (API REST & Capa de Servicios)
+* **Capa de Servicios (`@Service`):** Separación de la lógica de negocio en servicios dedicados (`StatusService`, `GeneradorService`, `CategorizadorService`, `ImagenService`, `ProductoService`).
+* **CRUD Completo:** Endpoints `GET`, `POST`, `PUT`, `DELETE` para la entidad `Producto` con persistencia en PostgreSQL.
+* **Auto-categorización con IA:** Al crear un producto sin categoría, el sistema la determina automáticamente usando OpenAI GPT-4o.
+* **Documentación interactiva:** Swagger UI disponible en `/swagger-ui/index.html`.
 
 ---
 
@@ -102,11 +109,64 @@ El backend sigue una arquitectura en capas separando la responsabilidad de cada 
 | Capa | Paquete | Responsabilidad |
 |---|---|---|
 | **Controller** | `Controller/` | Recibe peticiones HTTP, delega en servicios, devuelve respuestas |
-| **Service** | `service/` | Contiene la lógica de negocio (llamadas a OpenAI, token counting, etc.) |
+| **Service** | `service/` | Contiene la lógica de negocio (llamadas a OpenAI, token counting, CRUD) |
+| **Repository** | `repository/` | Acceso a la base de datos (JPA) |
+| **Model** | `model/` | Entidades que representan las tablas de la BD |
 
 ```
-HTTP Request → Controller → Service → OpenAI / PostgreSQL → Response
+HTTP Request → Controller → Service → Repository → PostgreSQL
+                              ↓
+                         OpenAI / DALL-E
 ```
+
+## 📡 Endpoints de la API
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| **GET** | `/api/productos` | Listar todos los productos |
+| **GET** | `/api/productos/{id}` | Obtener un producto por ID |
+| **POST** | `/api/productos` | Crear un producto (auto-categorización IA) |
+| **PUT** | `/api/productos/{id}` | Actualizar un producto |
+| **DELETE** | `/api/productos/{id}` | Eliminar un producto |
+| GET | `/generador` | Generar 5 productos ecológicos con IA |
+| GET | `/categorizador?producto=` | Clasificar un producto en categorías |
+| GET | `/imagen?prompt=` | Generar una imagen con DALL-E |
+| GET | `/instancia` | Información de la instancia activa |
+| GET | `/api/health` | Health check del servidor |
+
+---
+
+## 🧪 Cómo Probar la API REST (Entrega Final)
+
+Los endpoints están disponibles en Railway sin necesidad de instalar nada:
+
+```bash
+# Health check
+curl https://trazabilidad-end-to-end-production.up.railway.app/api/health
+
+# GET - Listar productos
+curl https://trazabilidad-end-to-end-production.up.railway.app/api/productos
+
+# POST - Crear producto (se auto-categoriza con IA)
+curl -X POST https://trazabilidad-end-to-end-production.up.railway.app/api/productos \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Zapatillas running","descripcion":"Zapatillas deportivas ligeras"}'
+
+# GET - Obtener por ID
+curl https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1
+
+# PUT - Actualizar
+curl -X PUT https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Zapatillas running","descripcion":"Modelo 2026","categoria":"Deportes"}'
+
+# DELETE - Eliminar
+curl -X DELETE https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1
+```
+
+También podés probar desde el navegador en la página principal y desde Swagger:
+- 🔗 **Web:** https://trazabilidad-end-to-end-production.up.railway.app/
+- 📜 **Swagger:** https://trazabilidad-end-to-end-production.up.railway.app/swagger-ui/index.html
 
 ---
 
@@ -130,14 +190,20 @@ Los resultados incluyen percentiles P50, P90, P99 y tasa de error, exportados a 
 │       ├── EcomartApplication.java
 │       ├── Controller/                     # Capa de presentación (HTTP)
 │       │   ├── StatusController.java        # /instancia, /api/health
+│       │   ├── ProductoController.java      # CRUD: GET, POST, PUT, DELETE
 │       │   ├── GeneradorDeProductosController.java  # /generador
 │       │   ├── CategorizadorDeProductosController.java # /categorizador
 │       │   └── GeneradorDeImagenesController.java   # /imagen
-│       └── service/                        # Capa de servicios (lógica de negocio)
-│           ├── StatusService.java
-│           ├── GeneradorService.java
-│           ├── CategorizadorService.java
-│           └── ImagenService.java
+│       ├── service/                        # Capa de servicios (lógica de negocio)
+│       │   ├── StatusService.java
+│       │   ├── ProductoService.java         # CRUD con auto-categorización
+│       │   ├── GeneradorService.java
+│       │   ├── CategorizadorService.java
+│       │   └── ImagenService.java
+│       ├── repository/                     # Capa de persistencia
+│       │   └── ProductoRepository.java
+│       └── model/                          # Entidades de base de datos
+│           └── Producto.java
 ├── docker-compose.yml            # Orquestación (app-1, app-2, nginx, db)
 ├── Dockerfile                    # Build multi-etapa de Spring Boot
 ├── nginx.conf                    # Config local del balanceador
