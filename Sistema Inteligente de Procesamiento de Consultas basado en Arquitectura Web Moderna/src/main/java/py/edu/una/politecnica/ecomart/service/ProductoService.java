@@ -9,9 +9,11 @@ import java.util.List;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final CategorizadorService categorizadorService;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(ProductoRepository productoRepository, CategorizadorService categorizadorService) {
         this.productoRepository = productoRepository;
+        this.categorizadorService = categorizadorService;
     }
 
     public List<Producto> listarTodos() {
@@ -24,6 +26,10 @@ public class ProductoService {
     }
 
     public Producto crear(Producto producto) {
+        if (producto.getCategoria() == null || producto.getCategoria().isBlank()) {
+            String categoria = categorizadorService.categorizarProducto(producto.getNombre());
+            producto.setCategoria(categoria);
+        }
         return productoRepository.save(producto);
     }
 
@@ -31,7 +37,9 @@ public class ProductoService {
         Producto producto = obtenerPorId(id);
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
-        producto.setCategoria(productoActualizado.getCategoria());
+        if (productoActualizado.getCategoria() != null && !productoActualizado.getCategoria().isBlank()) {
+            producto.setCategoria(productoActualizado.getCategoria());
+        }
         producto.setImagenUrl(productoActualizado.getImagenUrl());
         return productoRepository.save(producto);
     }
