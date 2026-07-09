@@ -95,6 +95,21 @@ El sistema integra las siguientes tecnologías distribuidas en sus dos fases de 
 
 ---
 
+## 🧱 Arquitectura en Capas
+
+El backend sigue una arquitectura en capas separando la responsabilidad de cada componente:
+
+| Capa | Paquete | Responsabilidad |
+|---|---|---|
+| **Controller** | `Controller/` | Recibe peticiones HTTP, delega en servicios, devuelve respuestas |
+| **Service** | `service/` | Contiene la lógica de negocio (llamadas a OpenAI, token counting, etc.) |
+
+```
+HTTP Request → Controller → Service → OpenAI / PostgreSQL → Response
+```
+
+---
+
 ## 🧪 Pruebas de Stress (JMeter)
 
 Se incluye un plan de pruebas (`load-test-plan.jmx`) que simula **1000 usuarios concurrentes** con ramp-up de 30s, probando 3 endpoints:
@@ -113,11 +128,16 @@ Los resultados incluyen percentiles P50, P90, P99 y tasa de error, exportados a 
 ├── src/                          # Código fuente Spring Boot
 │   └── main/java/.../
 │       ├── EcomartApplication.java
-│       └── Controller/
-│           ├── StatusController.java        # /instancia, /api/health
-│           ├── GeneradorDeProductosController.java  # /generador
-│           ├── CategorizadorDeProductosController.java # /categorizador
-│           └── GeneradorDeImagenesController.java   # /imagen
+│       ├── Controller/                     # Capa de presentación (HTTP)
+│       │   ├── StatusController.java        # /instancia, /api/health
+│       │   ├── GeneradorDeProductosController.java  # /generador
+│       │   ├── CategorizadorDeProductosController.java # /categorizador
+│       │   └── GeneradorDeImagenesController.java   # /imagen
+│       └── service/                        # Capa de servicios (lógica de negocio)
+│           ├── StatusService.java
+│           ├── GeneradorService.java
+│           ├── CategorizadorService.java
+│           └── ImagenService.java
 ├── docker-compose.yml            # Orquestación (app-1, app-2, nginx, db)
 ├── Dockerfile                    # Build multi-etapa de Spring Boot
 ├── nginx.conf                    # Config local del balanceador

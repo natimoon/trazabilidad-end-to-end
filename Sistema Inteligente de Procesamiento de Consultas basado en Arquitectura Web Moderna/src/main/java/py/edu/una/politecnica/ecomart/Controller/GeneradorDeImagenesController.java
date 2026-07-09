@@ -1,33 +1,22 @@
 package py.edu.una.politecnica.ecomart.Controller;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.image.ImageModel;
-import org.springframework.ai.image.ImageOptionsBuilder;
-import org.springframework.ai.image.ImagePrompt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import py.edu.una.politecnica.ecomart.service.ImagenService;
 
 @RestController
 @RequestMapping("/imagen")
 public class GeneradorDeImagenesController {
 
-    private final ImageModel imageModel;
+    private final ImagenService imagenService;
 
-    public GeneradorDeImagenesController(ImageModel imageModel) {
-        this.imageModel = imageModel;
+    public GeneradorDeImagenesController(ImagenService imagenService) {
+        this.imagenService = imagenService;
     }
 
     @GetMapping
-    public String generadorDeImagenes(String prompt){
-        var options = ImageOptionsBuilder.builder()
-                .withHeight(1024)
-                .withWidth(1024)
-                .build();
-        var response = imageModel.call(new ImagePrompt(prompt, options));
-        return response.getResult().getOutput().getUrl();
+    public String generadorDeImagenes(String prompt) {
+        return imagenService.generarImagen(prompt);
     }
-
 }
-
-
