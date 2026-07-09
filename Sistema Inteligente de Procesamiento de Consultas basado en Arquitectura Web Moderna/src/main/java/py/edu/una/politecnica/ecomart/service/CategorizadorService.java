@@ -33,10 +33,22 @@ public class CategorizadorService {
                 4. Prendas de vestir
                 5. Otros
                                 
-                Ejemplo de uso:
+                Ejemplos de uso:
                                 
                 Producto: Pelota de fútbol
                 Respuesta: Deportes
+                                
+                Producto: Zapatillas
+                Respuesta: Deportes
+                                
+                Producto: Camisa
+                Respuesta: Prendas de vestir
+                                
+                Producto: Auriculares
+                Respuesta: Electrónicos
+                                
+                Producto: Jabón
+                Respuesta: Higiene Personal
                 """;
         var tokens = contadorDeTokens(system, producto);
         System.out.println(tokens);
