@@ -52,4 +52,4 @@ El sistema integra las siguientes tecnologías distribuidas en sus dos fases de 
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/natimoon/trazabilidad-end-to-end.git](https://github.com/natimoon/trazabilidad-end-to-end.git)
+   git clone [https://github.com/natimoon/trazabilidad-end-to-end.git](https://github.com/natimoon/trazabilidad-end-to-end.git)# Ecomart - Despliegue exitoso
