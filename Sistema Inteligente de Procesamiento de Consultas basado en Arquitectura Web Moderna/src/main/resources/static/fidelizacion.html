@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecomart - Fidelización</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #0a0e17;
+            color: #e0e7ff;
+            overflow-x: hidden;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+            background-size: 60px 60px; z-index: 0; pointer-events: none;
+        }
+        .bg-glow {
+            position: fixed; top: -30%; left: -10%; width: 80%; height: 80%;
+            background: radial-gradient(ellipse, rgba(16,185,129,0.12), transparent 70%);
+            z-index: 0; pointer-events: none; animation: floatGlow 12s ease-in-out infinite;
+        }
+        .bg-glow-2 {
+            position: fixed; bottom: -20%; right: -10%; width: 70%; height: 70%;
+            background: radial-gradient(ellipse, rgba(59,130,246,0.1), transparent 70%);
+            z-index: 0; pointer-events: none; animation: floatGlow 15s ease-in-out infinite reverse;
+        }
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.05); }
+        }
+        .content { position: relative; z-index: 1; }
+        .navbar-custom {
+            background: rgba(10,14,23,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59,130,246,0.15);
+        }
+        .navbar-custom .brand {
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .nav-tabs-custom {
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-tabs-custom .nav-link {
+            color: #64748b; border: none; padding: 10px 20px; font-weight: 500;
+            border-radius: 0; margin-bottom: -1px;
+        }
+        .nav-tabs-custom .nav-link:hover { color: #e0e7ff; background: rgba(255,255,255,0.03); }
+        .nav-tabs-custom .nav-link.active {
+            color: #10b981; background: transparent;
+            border-bottom: 2px solid #10b981;
+        }
+        .section-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .section-card:hover { border-color: rgba(59,130,246,0.25); }
+        .section-card .card-h {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-card .card-b { padding: 20px; }
+        .stat-card {
+            text-align: center; padding: 20px 16px;
+        }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; font-size: 1.4rem;
+        }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+        .stat-card .stat-label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+        .form-control, .form-select {
+            background: rgba(0,0,0,0.3) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            color: #e0e7ff !important;
+            font-size: 0.85rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15) !important;
+        }
+        .form-control::placeholder { color: #475569; }
+        .btn-custom { border-radius: 10px; font-weight: 600; padding: 8px 20px; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-custom:active { transform: scale(0.96); }
+        .result-box {
+            margin-top: 10px; padding: 10px 14px;
+            background: rgba(0,0,0,0.3); border-radius: 10px;
+            font-size: 0.8rem; max-height: 180px; overflow-y: auto;
+            display: none; border: 1px solid rgba(255,255,255,0.06);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            white-space: pre-wrap; word-break: break-word; color: #94a3b8;
+        }
+        .result-box.show { display: block; }
+        .result-box.loading { display: block; color: #64748b; font-family: 'Inter', sans-serif; }
+        .result-box.loading::after {
+            content: ''; display: inline-block; width: 12px; height: 12px;
+            border: 2px solid #3b82f6; border-top-color: transparent;
+            border-radius: 50%; margin-left: 8px; vertical-align: middle;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .table-custom { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+        .table-custom th {
+            padding: 8px 6px; text-align: left; color: #64748b;
+            border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: 500;
+        }
+        .table-custom td {
+            padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .badge-nivel {
+            display: inline-block; padding: 2px 10px; border-radius: 10px;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        .badge-bronce { background: rgba(205,127,50,0.2); color: #cd7f32; }
+        .badge-plata { background: rgba(192,192,192,0.2); color: #c0c0c0; }
+        .badge-oro { background: rgba(255,215,0,0.2); color: #ffd700; }
+        .badge-platino { background: rgba(229,228,226,0.2); color: #e5e4e2; }
+        .tab-content-section { display: none; }
+        .tab-content-section.active { display: block; }
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 24px 0; margin-top: 40px;
+            text-align: center; color: #475569; font-size: 0.85rem;
+        }
+        footer strong { color: #94a3b8; }
+        @media (max-width: 768px) {
+            .stat-card .stat-value { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow-2"></div>
+<div class="content">
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <a class="navbar-brand brand fw-bold fs-4" href="/">Ecomart AI</a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/" class="btn btn-outline-light btn-sm rounded-pill px-3" style="border-color:rgba(255,255,255,0.15);">AI & Balanceo</a>
+                <a href="/fidelizacion.html" class="btn btn-outline-light btn-sm rounded-pill px-3" style="border-color:rgba(16,185,129,0.3);color:#10b981;">Fidelización</a>
+                <a href="/swagger-ui/index.html" class="btn btn-outline-light btn-sm rounded-pill px-3" style="border-color:rgba(255,255,255,0.15);">Swagger</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="padding:40px 0 20px;text-align:center;">
+            <h1 style="font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#e0e7ff,#10b981,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;">Sistema de Fidelización</h1>
+            <p style="color:#94a3b8;font-size:1rem;">Programa de puntos, niveles, canje y segmentación de clientes</p>
+        </div>
+
+        <ul class="nav nav-tabs-custom mb-4" id="mainTabs">
+            <li class="nav-item"><button class="nav-link active" data-tab="dashboard">Dashboard</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="clientes">Clientes</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="puntos">Puntos</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="canje">Canje</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="encuestas">Encuestas</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="config">Configuración</button></li>
+        </ul>
+
+        <!-- ==================== DASHBOARD ==================== -->
+        <div class="tab-content-section active" id="tab-dashboard">
+            <div class="row g-3 mb-4" id="dashboardStats">
+                <div class="col-md-3 col-6">
+                    <div class="section-card stat-card">
+                        <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:#3b82f6;">👥</div>
+                        <div class="stat-value" id="dash-clientes">-</div>
+                        <div class="stat-label">Total Clientes</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="section-card stat-card">
+                        <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:#10b981;">⭐</div>
+                        <div class="stat-value" id="dash-puntos-activos">-</div>
+                        <div class="stat-label">Puntos Activos</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="section-card stat-card">
+                        <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;">💀</div>
+                        <div class="stat-value" id="dash-puntos-vencidos">-</div>
+                        <div class="stat-label">Puntos Vencidos</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="section-card stat-card">
+                        <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b;">🏆</div>
+                        <div class="stat-value" id="dash-canjes">-</div>
+                        <div class="stat-label">Canjes Realizados</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card mb-4">
+                <div class="card-h"><span>📊</span> Distribución por Nivel</div>
+                <div class="card-b">
+                    <div class="row g-3" id="dash-distribucion">
+                        <div class="col-3 col-md-3 col-6 text-center">
+                            <div style="font-size:0.8rem;color:#cd7f32;">Bronce</div>
+                            <div style="font-size:1.5rem;font-weight:700;" id="dash-n-bronce">0</div>
+                        </div>
+                        <div class="col-3 col-md-3 col-6 text-center">
+                            <div style="font-size:0.8rem;color:#c0c0c0;">Plata</div>
+                            <div style="font-size:1.5rem;font-weight:700;" id="dash-n-plata">0</div>
+                        </div>
+                        <div class="col-3 col-md-3 col-6 text-center">
+                            <div style="font-size:0.8rem;color:#ffd700;">Oro</div>
+                            <div style="font-size:1.5rem;font-weight:700;" id="dash-n-oro">0</div>
+                        </div>
+                        <div class="col-3 col-md-3 col-6 text-center">
+                            <div style="font-size:0.8rem;color:#e5e4e2;">Platino</div>
+                            <div style="font-size:1.5rem;font-weight:700;" id="dash-n-platino">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mb-4">
+                <button class="btn btn-outline-light btn-custom" onclick="cargarDashboard()" style="border-color:rgba(255,255,255,0.1);">🔄 Refrescar Dashboard</button>
+            </div>
+        </div>
+
+        <!-- ==================== CLIENTES ==================== -->
+        <div class="tab-content-section" id="tab-clientes">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="section-card">
+                        <div class="card-h"><span>✚</span> Nuevo Cliente</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-nombre" placeholder="Nombre"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-apellido" placeholder="Apellido"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-doc" placeholder="Nro Documento"></div>
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="cli-tipo-doc">
+                                        <option value="CI">CI</option>
+                                        <option value="RUC">RUC</option>
+                                        <option value="Pasaporte">Pasaporte</option>
+                                    </select>
+                                </div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-email" placeholder="Email"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-tel" placeholder="Teléfono"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-nac" placeholder="Nacionalidad" value="Paraguaya"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-fecha" type="date"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mt-3" onclick="crearCliente()">Crear Cliente</button>
+                            <div class="result-box" id="res-crear-cliente"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>🔍</span> Segmentar Clientes</div>
+                        <div class="card-b">
+                            <div class="d-flex gap-2 flex-wrap mb-2">
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarNivel('Bronce')" style="border-color:rgba(255,255,255,0.1);">Bronce</button>
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarNivel('Plata')" style="border-color:rgba(255,255,255,0.1);">Plata</button>
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarNivel('Oro')" style="border-color:rgba(255,255,255,0.1);">Oro</button>
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarNivel('Platino')" style="border-color:rgba(255,255,255,0.1);">Platino</button>
+                            </div>
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="seg-puntos-min" placeholder="Puntos min" type="number" style="width:100px;">
+                                <input class="form-control form-control-sm" id="seg-puntos-max" placeholder="Puntos max" type="number" style="width:100px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarRangoPuntos()">Por puntos</button>
+                            </div>
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="seg-nac" placeholder="Nacionalidad" value="Paraguaya" style="width:140px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarNacionalidad()">Por nacionalidad</button>
+                            </div>
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="seg-cumple-mes" placeholder="Mes" type="number" min="1" max="12" style="width:70px;">
+                                <input class="form-control form-control-sm" id="seg-cumple-dia" placeholder="Día" type="number" min="1" max="31" style="width:70px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="buscarCumpleanos()">Cumpleaños</button>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <input class="form-control form-control-sm" id="seg-referido-id" placeholder="ID Cliente" type="number" style="width:100px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="obtenerReferidos()">Referidos</button>
+                            </div>
+                            <div class="result-box" id="res-segmentar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>📋</span> Lista de Clientes
+                            <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarClientes()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                        </div>
+                        <div class="card-b" style="max-height:450px;overflow-y:auto;" id="clientes-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PUNTOS ==================== -->
+        <div class="tab-content-section" id="tab-puntos">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="section-card">
+                        <div class="card-h"><span>➕</span> Cargar Puntos</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="carga-cliente" placeholder="ID Cliente" type="number"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="carga-monto" placeholder="Monto operación (Gs)" type="number"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="carga-concepto" placeholder="ID Concepto" type="number"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="carga-regla" placeholder="ID Regla Puntos" type="number"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mt-3" onclick="cargarPuntos()">Cargar Puntos</button>
+                            <div class="result-box" id="res-cargar-puntos"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>➖</span> Usar Puntos (FIFO)</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-4"><input class="form-control form-control-sm" id="uso-cliente" placeholder="ID Cliente" type="number"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="uso-puntos" placeholder="Puntos a usar" type="number"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="uso-concepto" placeholder="ID Concepto" type="number"></div>
+                            </div>
+                            <button class="btn btn-warning btn-custom w-100 mt-3" onclick="usarPuntos()" style="color:#0a0e17;">Usar Puntos</button>
+                            <div class="result-box" id="res-usar-puntos"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>🎒</span> Bolsas de Puntos
+                            <div class="ms-auto d-flex gap-2">
+                                <input class="form-control form-control-sm" id="bolsas-cliente" placeholder="ID Cliente" type="number" style="width:100px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="consultarBolsas()" style="border-color:rgba(255,255,255,0.1);">Consultar</button>
+                            </div>
+                        </div>
+                        <div class="card-b" style="max-height:400px;overflow-y:auto;" id="bolsas-table">
+                            <div style="color:#64748b;text-align:center;padding:20px;font-size:0.85rem;">Ingrese un ID de cliente y presione "Consultar"</div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>📜</span> Historial de Uso</div>
+                        <div class="card-b" style="max-height:250px;overflow-y:auto;" id="uso-historial">
+                            <div style="color:#64748b;text-align:center;padding:20px;font-size:0.85rem;">Ingrese un ID de cliente y presione "Consultar" arriba</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== CANJE ==================== -->
+        <div class="tab-content-section" id="tab-canje">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="section-card">
+                        <div class="card-h"><span>📦</span> Productos del Catálogo</div>
+                        <div class="card-b">
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><input class="form-control form-control-sm" id="cat-nombre" placeholder="Nombre producto"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="cat-puntos" placeholder="Puntos requeridos" type="number"></div>
+                                <div class="col-2"><input class="form-control form-control-sm" id="cat-stock" placeholder="Stock" type="number" value="10"></div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success btn-custom flex-fill" onclick="crearProductoCatalogo()">Agregar Producto</button>
+                                <button class="btn btn-outline-light btn-custom" onclick="listarProductosCatalogo()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                            </div>
+                            <div class="result-box" id="res-crear-catalogo"></div>
+                            <div style="max-height:250px;overflow-y:auto;margin-top:10px;" id="catalogo-table"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>🔄</span> Canjear Puntos</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-4"><input class="form-control form-control-sm" id="canje-cliente" placeholder="ID Cliente" type="number"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="canje-producto" placeholder="ID Producto" type="number"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="canje-puntos" placeholder="Puntos" type="number"></div>
+                            </div>
+                            <button class="btn btn-primary btn-custom w-100 mt-3" onclick="canjearPuntos()">Canjear</button>
+                            <div class="result-box" id="res-canje"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>📋</span> Historial de Canjes
+                            <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarCanjes()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                        </div>
+                        <div class="card-b" style="max-height:400px;overflow-y:auto;" id="canjes-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ENCUESTAS ==================== -->
+        <div class="tab-content-section" id="tab-encuestas">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="section-card">
+                        <div class="card-h"><span>📝</span> Nueva Encuesta</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="enc-cliente" placeholder="ID Cliente" type="number"></div>
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="enc-puntaje">
+                                        <option value="1">1 - Muy malo</option>
+                                        <option value="2">2 - Malo</option>
+                                        <option value="3">3 - Regular</option>
+                                        <option value="4">4 - Bueno</option>
+                                        <option value="5" selected>5 - Excelente</option>
+                                    </select>
+                                </div>
+                                <div class="col-12"><input class="form-control form-control-sm" id="enc-comentario" placeholder="Comentario"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mt-3" onclick="crearEncuesta()">Enviar Encuesta</button>
+                            <div class="result-box" id="res-crear-encuesta"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>📋</span> Encuestas Recibidas
+                            <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarEncuestas()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                        </div>
+                        <div class="card-b" style="max-height:450px;overflow-y:auto;" id="encuestas-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== CONFIGURACIÓN ==================== -->
+        <div class="tab-content-section" id="tab-config">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <div class="card-h"><span>📐</span> Reglas de Puntos</div>
+                        <div class="card-b">
+                            <div class="row g-2 mb-2">
+                                <div class="col-12"><input class="form-control form-control-sm" id="reg-nombre" placeholder="Nombre"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="reg-puntos-por-unidad" placeholder="Puntos x unidad" type="number" value="1"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="reg-monto-por-unidad" placeholder="Monto x unidad (Gs)" type="number" value="100"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="reg-monto-min" placeholder="Monto mínimo" type="number" value="0"></div>
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="reg-activo">
+                                        <option value="true">Activo</option>
+                                        <option value="false">Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mb-2" onclick="crearRegla()">Crear Regla</button>
+                            <button class="btn btn-outline-light btn-custom w-100" onclick="listarReglas()" style="border-color:rgba(255,255,255,0.1);">📋 Listar Reglas</button>
+                            <div class="result-box" id="res-reglas"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <div class="card-h"><span>⏰</span> Parámetros Vencimiento</div>
+                        <div class="card-b">
+                            <div class="row g-2 mb-2">
+                                <div class="col-8"><input class="form-control form-control-sm" id="venc-dias" placeholder="Días para vencimiento" type="number" value="365"></div>
+                                <div class="col-4">
+                                    <select class="form-select form-select-sm" id="venc-activo">
+                                        <option value="true">Activo</option>
+                                        <option value="false">Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mb-2" onclick="crearParametroVencimiento()">Crear Parámetro</button>
+                            <button class="btn btn-outline-light btn-custom w-100" onclick="listarParametrosVencimiento()" style="border-color:rgba(255,255,255,0.1);">📋 Listar</button>
+                            <div class="result-box" id="res-venc"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <div class="card-h"><span>🏷️</span> Conceptos de Uso</div>
+                        <div class="card-b">
+                            <div class="row g-2 mb-2">
+                                <div class="col-12"><input class="form-control form-control-sm" id="conc-nombre" placeholder="Nombre"></div>
+                                <div class="col-12"><input class="form-control form-control-sm" id="conc-desc" placeholder="Descripción"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mb-2" onclick="crearConcepto()">Crear Concepto</button>
+                            <button class="btn btn-outline-light btn-custom w-100" onclick="listarConceptos()" style="border-color:rgba(255,255,255,0.1);">📋 Listar</button>
+                            <div class="result-box" id="res-conceptos"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <strong>Trabajo Practico Integrador</strong> — Arquitectura Web 2026 &middot;
+            Prof. Rodrigo Benitez &middot;
+            Natalia Godoy &middot;
+            <span style="color:#3b82f6;">FP-UNA</span>
+        </div>
+    </footer>
+</div>
+
+<script>
+// ==================== TAB SWITCHING ====================
+document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.nav-tabs-custom .nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content-section').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    });
+});
+
+// ==================== API HELPER ====================
+async function api(url, options) {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
+    }
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) return res.json();
+    return res.text();
+}
+
+function showResult(elId, data, isError) {
+    const el = document.getElementById(elId);
+    el.className = 'result-box show';
+    if (isError) {
+        el.style.color = '#ef4444';
+        el.textContent = '❌ ' + (data.message || data || 'Error');
+    } else {
+        el.style.color = '#94a3b8';
+        el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+}
+
+function showLoading(elId) {
+    const el = document.getElementById(elId);
+    el.className = 'result-box loading';
+    el.textContent = 'Procesando...';
+}
+
+function hideResult(elId) {
+    const el = document.getElementById(elId);
+    el.className = 'result-box';
+}
+
+// ==================== DASHBOARD ====================
+async function cargarDashboard() {
+    try {
+        const data = await api('/api/dashboard');
+        document.getElementById('dash-clientes').textContent = data.totalClientes ?? data.total_clientes ?? '-';
+        document.getElementById('dash-puntos-activos').textContent = data.puntosActivos ?? data.puntos_activos ?? '-';
+        document.getElementById('dash-puntos-vencidos').textContent = data.puntosVencidos ?? data.puntos_vencidos ?? '-';
+        document.getElementById('dash-canjes').textContent = data.totalCanjes ?? data.total_canjes ?? '-';
+        document.getElementById('dash-n-bronce').textContent = data.clientesBronce ?? data.clientes_bronce ?? '0';
+        document.getElementById('dash-n-plata').textContent = data.clientesPlata ?? data.clientes_plata ?? '0';
+        document.getElementById('dash-n-oro').textContent = data.clientesOro ?? data.clientes_oro ?? '0';
+        document.getElementById('dash-n-platino').textContent = data.clientesPlatino ?? data.clientes_platino ?? '0';
+    } catch (e) {
+        document.getElementById('dash-clientes').textContent = 'Error';
+    }
+}
+
+// ==================== CLIENTES ====================
+async function listarClientes() {
+    const div = document.getElementById('clientes-table');
+    div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Cargando...</div>';
+    try {
+        const data = await api('/api/clientes');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">No hay clientes</div>';
+            return;
+        }
+        let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Doc</th><th>Email</th><th>Nivel</th><th>Puntos</th><th>Acción</th></tr>';
+        for (const c of data) {
+            const nivelClass = `badge-nivel badge-${(c.nivel||'bronce').toLowerCase()}`;
+            h += `<tr>
+                <td>${c.id}</td>
+                <td>${c.nombre || ''} ${c.apellido || ''}</td>
+                <td style="font-size:0.75rem;">${c.nroDocumento || '-'}</td>
+                <td style="font-size:0.75rem;">${c.email || '-'}</td>
+                <td><span class="${nivelClass}">${c.nivel || 'Bronce'}</span></td>
+                <td><strong>${c.puntosAcumulados ?? 0}</strong></td>
+                <td><button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarCliente(${c.id})">🗑</button></td>
+            </tr>`;
+        }
+        h += '</table>';
+        div.innerHTML = h;
+    } catch (e) {
+        div.innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar clientes</div>';
+    }
+}
+
+async function crearCliente() {
+    const body = {
+        nombre: document.getElementById('cli-nombre').value.trim(),
+        apellido: document.getElementById('cli-apellido').value.trim(),
+        nroDocumento: document.getElementById('cli-doc').value.trim(),
+        tipoDocumento: document.getElementById('cli-tipo-doc').value,
+        email: document.getElementById('cli-email').value.trim(),
+        telefono: document.getElementById('cli-tel').value.trim(),
+        nacionalidad: document.getElementById('cli-nac').value.trim(),
+        fechaNacimiento: document.getElementById('cli-fecha').value || null
+    };
+    if (!body.nombre) { showResult('res-crear-cliente', 'El nombre es obligatorio', true); return; }
+    showLoading('res-crear-cliente');
+    try {
+        const data = await api('/api/clientes', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-crear-cliente', `✅ Cliente #${data.id} creado: ${data.nombre} ${data.apellido} (${data.nivel})`);
+        document.getElementById('cli-nombre').value = '';
+        document.getElementById('cli-apellido').value = '';
+        document.getElementById('cli-doc').value = '';
+        document.getElementById('cli-email').value = '';
+        document.getElementById('cli-tel').value = '';
+        listarClientes();
+        cargarDashboard();
+    } catch (e) { showResult('res-crear-cliente', e.message, true); }
+}
+
+async function eliminarCliente(id) {
+    if (!confirm(`Eliminar cliente #${id}?`)) return;
+    try { await api(`/api/clientes/${id}`, {method:'DELETE'}); listarClientes(); cargarDashboard(); }
+    catch(e) { alert('Error: ' + e.message); }
+}
+
+async function segmentarNivel(nivel) {
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/segmentar/nivel?nivel=${encodeURIComponent(nivel)}`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) en nivel ${nivel}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+async function segmentarRangoPuntos() {
+    const min = document.getElementById('seg-puntos-min').value;
+    const max = document.getElementById('seg-puntos-max').value;
+    if (!min || !max) { showResult('res-segmentar', 'Ingrese mínimo y máximo', true); return; }
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/segmentar/puntos?min=${min}&max=${max}`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) entre ${min} y ${max} pts: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+async function segmentarNacionalidad() {
+    const nac = document.getElementById('seg-nac').value.trim();
+    if (!nac) { showResult('res-segmentar', 'Ingrese nacionalidad', true); return; }
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/segmentar/nacionalidad?nacionalidad=${encodeURIComponent(nac)}`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) de ${nac}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+async function buscarCumpleanos() {
+    const mes = document.getElementById('seg-cumple-mes').value;
+    const dia = document.getElementById('seg-cumple-dia').value;
+    if (!mes || !dia) { showResult('res-segmentar', 'Ingrese mes y día', true); return; }
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/buscar/cumpleanos?mes=${mes}&dia=${dia}`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) cumplen ${dia}/${mes}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+async function obtenerReferidos() {
+    const id = document.getElementById('seg-referido-id').value;
+    if (!id) { showResult('res-segmentar', 'Ingrese ID del cliente', true); return; }
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/${id}/referidos`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} referido(s) del cliente #${id}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+// ==================== PUNTOS ====================
+async function cargarPuntos() {
+    const body = {
+        clienteId: parseInt(document.getElementById('carga-cliente').value),
+        monto: parseFloat(document.getElementById('carga-monto').value)
+    };
+    if (!body.clienteId || !body.monto) { showResult('res-cargar-puntos', 'Cliente ID y Monto son obligatorios', true); return; }
+    showLoading('res-cargar-puntos');
+    try {
+        const data = await api('/api/puntos/cargar', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-cargar-puntos', `✅ Puntos cargados: ${JSON.stringify(data)}`);
+        cargarDashboard();
+        consultarBolsas();
+    } catch (e) { showResult('res-cargar-puntos', e.message, true); }
+}
+
+async function usarPuntos() {
+    const body = {
+        clienteId: parseInt(document.getElementById('uso-cliente').value),
+        conceptoUsoId: parseInt(document.getElementById('uso-concepto').value)
+    };
+    if (!body.clienteId) { showResult('res-usar-puntos', 'Cliente ID obligatorio', true); return; }
+    showLoading('res-usar-puntos');
+    try {
+        const data = await api('/api/puntos/usar', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-usar-puntos', `✅ Puntos usados: ${JSON.stringify(data)}`);
+        cargarDashboard();
+        consultarBolsas();
+    } catch (e) { showResult('res-usar-puntos', e.message, true); }
+}
+
+async function consultarBolsas() {
+    const clienteId = document.getElementById('bolsas-cliente').value;
+    if (!clienteId) { return; }
+    try {
+        const data = await api(`/api/puntos/bolsas/cliente/${clienteId}`);
+        const div = document.getElementById('bolsas-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin bolsas de puntos</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Puntos</th><th>Usados</th><th>Saldo</th><th>Asignación</th><th>Vencimiento</th><th>Estado</th></tr>';
+            for (const b of data) {
+                const saldo = (b.puntajeAsignado || 0) - (b.puntajeUtilizado || 0);
+                h += `<tr>
+                    <td>${b.id}</td>
+                    <td>${b.puntajeAsignado || 0}</td>
+                    <td>${b.puntajeUtilizado || 0}</td>
+                    <td><strong>${saldo}</strong></td>
+                    <td style="font-size:0.75rem;">${b.fechaAsignacion || '-'}</td>
+                    <td style="font-size:0.75rem;">${b.fechaVencimiento || '-'}</td>
+                    <td>${b.vencida ? '💀 Vencida' : '✅ Activa'}</td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+        // Historial de uso
+        const usoDiv = document.getElementById('uso-historial');
+        try {
+            const uso = await api(`/api/puntos/usos/cliente/${clienteId}`);
+            if (!uso || uso.length === 0) {
+                usoDiv.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin uso de puntos</div>';
+            } else {
+                let h = '<table class="table-custom"><tr><th>ID</th><th>Puntos</th><th>Fecha</th><th>Concepto</th></tr>';
+                for (const u of uso) {
+                    h += `<tr><td>${u.id}</td><td>${u.puntosUtilizados || 0}</td><td style="font-size:0.75rem;">${u.fechaUso || u.fecha || '-'}</td><td>${u.conceptoId || u.concepto || '-'}</td></tr>`;
+                }
+                h += '</table>';
+                usoDiv.innerHTML = h;
+            }
+        } catch(e) {
+            usoDiv.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Error al cargar historial</div>';
+        }
+    } catch (e) {
+        document.getElementById('bolsas-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error: ' + e.message + '</div>';
+    }
+}
+
+// ==================== CANJE ====================
+async function listarProductosCatalogo() {
+    try {
+        const data = await api('/api/productos-canje');
+        const div = document.getElementById('catalogo-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:10px;font-size:0.8rem;">Sin productos en catálogo</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Puntos</th><th>Stock</th><th>Acción</th></tr>';
+            for (const p of data) {
+                h += `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.nombre || '-'}</td>
+                    <td><strong>${p.puntosRequeridos || 0}</strong></td>
+                    <td>${p.stock ?? '-'}</td>
+                    <td><button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarProductoCatalogo(${p.id})">🗑</button></td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) {
+        document.getElementById('catalogo-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:10px;font-size:0.8rem;">Error al cargar</div>';
+    }
+}
+
+async function crearProductoCatalogo() {
+    const body = {
+        nombre: document.getElementById('cat-nombre').value.trim(),
+        puntosRequeridos: parseInt(document.getElementById('cat-puntos').value),
+        stock: parseInt(document.getElementById('cat-stock').value) || 10,
+        activo: true
+    };
+    if (!body.nombre || !body.puntosRequeridos) { showResult('res-crear-catalogo', 'Nombre y puntos requeridos obligatorios', true); return; }
+    showLoading('res-crear-catalogo');
+    try {
+        const data = await api('/api/productos-canje', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-crear-catalogo', `✅ Producto #${data.id}: ${data.nombre} (${data.puntosRequeridos} pts)`);
+        document.getElementById('cat-nombre').value = '';
+        document.getElementById('cat-puntos').value = '';
+        listarProductosCatalogo();
+    } catch (e) { showResult('res-crear-catalogo', e.message, true); }
+}
+
+async function eliminarProductoCatalogo(id) {
+    if (!confirm(`Eliminar producto #${id}?`)) return;
+    try { await api(`/api/productos-canje/${id}`, {method:'DELETE'}); listarProductosCatalogo(); }
+    catch(e) { alert('Error: ' + e.message); }
+}
+
+async function canjearPuntos() {
+    const body = {
+        clienteId: parseInt(document.getElementById('canje-cliente').value),
+        productoId: parseInt(document.getElementById('canje-producto').value)
+    };
+    if (!body.clienteId || !body.productoId) {
+        showResult('res-canje', 'Cliente ID y Producto ID obligatorios', true); return;
+    }
+    showLoading('res-canje');
+    try {
+        const data = await api('/api/canje', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-canje', `✅ Canje exitoso: ${JSON.stringify(data)}`);
+        cargarDashboard();
+        listarCanjes();
+    } catch (e) { showResult('res-canje', e.message, true); }
+}
+
+async function listarCanjes() {
+    try {
+        const data = await api('/api/canje');
+        const div = document.getElementById('canjes-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin canjes realizados</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Puntos</th><th>Fecha</th></tr>';
+            for (const c of data) {
+                h += `<tr>
+                    <td>${c.id}</td>
+                    <td>#${c.clienteId || '-'}</td>
+                    <td>${c.productoCatalogoId || '-'}</td>
+                    <td><strong>${c.puntosUtilizados || 0}</strong></td>
+                    <td style="font-size:0.75rem;">${c.fechaCanje || c.fecha || '-'}</td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) {
+        document.getElementById('canjes-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar</div>';
+    }
+}
+
+// ==================== ENCUESTAS ====================
+async function crearEncuesta() {
+    const body = {
+        clienteId: parseInt(document.getElementById('enc-cliente').value),
+        puntaje: parseInt(document.getElementById('enc-puntaje').value),
+        comentario: document.getElementById('enc-comentario').value.trim()
+    };
+    if (!body.clienteId) { showResult('res-crear-encuesta', 'ID Cliente obligatorio', true); return; }
+    showLoading('res-crear-encuesta');
+    try {
+        const data = await api('/api/encuestas', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-crear-encuesta', `✅ Encuesta #${data.id} registrada (${data.puntaje}/5)`);
+        document.getElementById('enc-cliente').value = '';
+        document.getElementById('enc-comentario').value = '';
+        listarEncuestas();
+    } catch (e) { showResult('res-crear-encuesta', e.message, true); }
+}
+
+async function listarEncuestas() {
+    try {
+        const data = await api('/api/encuestas');
+        const div = document.getElementById('encuestas-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin encuestas</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Cliente</th><th>Puntaje</th><th>Comentario</th><th>Fecha</th></tr>';
+            for (const e of data) {
+                h += `<tr>
+                    <td>${e.id}</td>
+                    <td>#${e.clienteId || '-'}</td>
+                    <td>${'⭐'.repeat(e.puntaje || 0)}</td>
+                    <td style="font-size:0.75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;">${e.comentario || '-'}</td>
+                    <td style="font-size:0.75rem;">${e.fechaEncuesta || e.fecha || '-'}</td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) {
+        document.getElementById('encuestas-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar</div>';
+    }
+}
+
+// ==================== CONFIGURACIÓN ====================
+async function crearRegla() {
+    const body = {
+        nombre: document.getElementById('reg-nombre').value.trim(),
+        puntosPorUnidad: parseInt(document.getElementById('reg-puntos-por-unidad').value),
+        montoPorUnidad: parseFloat(document.getElementById('reg-monto-por-unidad').value),
+        montoMinimo: parseFloat(document.getElementById('reg-monto-min').value) || 0,
+        activo: document.getElementById('reg-activo').value === 'true'
+    };
+    if (!body.nombre) { showResult('res-reglas', 'Nombre obligatorio', true); return; }
+    showLoading('res-reglas');
+    try {
+        const data = await api('/api/reglas-puntos', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-reglas', `✅ Regla #${data.id}: ${data.nombre}`);
+        document.getElementById('reg-nombre').value = '';
+    } catch (e) { showResult('res-reglas', e.message, true); }
+}
+
+async function listarReglas() {
+    showLoading('res-reglas');
+    try {
+        const data = await api('/api/reglas-puntos');
+        const el = document.getElementById('res-reglas');
+        el.className = 'result-box show';
+        el.style.color = '#94a3b8';
+        el.textContent = JSON.stringify(data, null, 2);
+    } catch (e) { showResult('res-reglas', e.message, true); }
+}
+
+async function crearParametroVencimiento() {
+    const body = {
+        diasVencimiento: parseInt(document.getElementById('venc-dias').value),
+        activo: document.getElementById('venc-activo').value === 'true'
+    };
+    showLoading('res-venc');
+    try {
+        const data = await api('/api/vencimientos', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-venc', `✅ Parámetro #${data.id}: ${data.diasVencimiento} días`);
+    } catch (e) { showResult('res-venc', e.message, true); }
+}
+
+async function listarParametrosVencimiento() {
+    showLoading('res-venc');
+    try {
+        const data = await api('/api/vencimientos');
+        const el = document.getElementById('res-venc');
+        el.className = 'result-box show';
+        el.style.color = '#94a3b8';
+        el.textContent = JSON.stringify(data, null, 2);
+    } catch (e) { showResult('res-venc', e.message, true); }
+}
+
+async function crearConcepto() {
+    const body = {
+        nombre: document.getElementById('conc-nombre').value.trim(),
+        descripcion: document.getElementById('conc-desc').value.trim()
+    };
+    if (!body.nombre) { showResult('res-conceptos', 'Nombre obligatorio', true); return; }
+    showLoading('res-conceptos');
+    try {
+        const data = await api('/api/conceptos-uso', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-conceptos', `✅ Concepto #${data.id}: ${data.nombre}`);
+        document.getElementById('conc-nombre').value = '';
+        document.getElementById('conc-desc').value = '';
+    } catch (e) { showResult('res-conceptos', e.message, true); }
+}
+
+async function listarConceptos() {
+    showLoading('res-conceptos');
+    try {
+        const data = await api('/api/conceptos-uso');
+        const el = document.getElementById('res-conceptos');
+        el.className = 'result-box show';
+        el.style.color = '#94a3b8';
+        el.textContent = JSON.stringify(data, null, 2);
+    } catch (e) { showResult('res-conceptos', e.message, true); }
+}
+
+// ==================== INIT ====================
+cargarDashboard();
+listarClientes();
+listarProductosCatalogo();
+listarCanjes();
+listarEncuestas();
+setInterval(cargarDashboard, 30000);
+</script>
+</body>
+</html>
