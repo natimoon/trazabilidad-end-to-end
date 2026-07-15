@@ -11,7 +11,7 @@
 	<groupId>py.edu.una.politecnica</groupId>
 	<artifactId>tp-arquitectura-web</artifactId>
 	<version>1.0.0</version>
-	<name>TP Arquitectura Web - Natalia Godoy - Noelia Insfrán </name>
+	<name>TP Arquitectura Web - Natalia Godoy</name>
 	<description>Trazabilidad End-to-End de una Solicitud Web - FP-UNA</description>
 
 	<properties>
