@@ -7,210 +7,232 @@
   <p>👨‍🏫 <b>Profesor:</b> Rodrigo Benítez</p>
 </div>
 
+<p align="center">
+  <a href="https://trazabilidad-end-to-end-production.up.railway.app/">🚀 App en Producción</a> •
+  <a href="https://trazabilidad-end-to-end-production.up.railway.app/fidelizacion.html">⭐ Fidelización</a> •
+  <a href="https://trazabilidad-end-to-end-production.up.railway.app/swagger-ui/index.html">📜 Swagger</a>
+</p>
+
+---
+
+## 📋 Tabla de Contenidos
+
+1. [Sobre el Proyecto](#-sobre-el-proyecto-general)
+2. [Arquitectura](#-arquitectura-general-del-sistema)
+3. [Módulos](#-módulos-del-sistema)
+4. [Acceso en Producción](#-acceso-en-producción)
+5. [Endpoints](#-endpoints-de-la-api)
+6. [Flujo de Demostración](#-flujo-completo-demostración)
+7. [Guía de Ejecución Local](#-guía-de-ejecución-local)
+8. [Estructura del Proyecto](#-estructura-del-proyecto)
+9. [Documentación Detallada](#-documentaci%C3%B3n-detallada)
+
+> 📖 **Para la documentación completa del Sistema de Fidelización** (todos los endpoints, entidades y KPIs), ingresá a la carpeta [`Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna/`](./Sistema%20Inteligente%20de%20Procesamiento%20de%20Consultas%20basado%20en%20Arquitectura%20Web%20Moderna/) y abrí su `README.md`.
+
 ---
 
 ## 📖 Sobre el Proyecto General
-**Ecomart** es un entorno de experimentación de alta fidelidad diseñado para analizar el comportamiento, rendimiento y seguridad de los datos en entornos distribuidos. El proyecto abarca desde el despliegue e infraestructura cloud (Etapa 1) hasta la simulación local de arquitecturas multinodo de alta disponibilidad con balanceo de carga (Etapa 2).
+
+**Ecomart** es un entorno de experimentación de alta fidelidad diseñado para analizar el comportamiento, rendimiento y seguridad de los datos en entornos distribuidos. El proyecto abarca:
+
+| Etapa | Enfoque |
+|-------|---------|
+| **Etapa 1** | Despliegue cloud, seguridad TLS, CDN, CI/CD |
+| **Etapa 2** | Balanceo NGINX, alta disponibilidad, stress testing |
+| **Entrega Final** | **Sistema de Fidelización de Clientes** con puntos, canje, niveles, segmentación y dashboard |
 
 ---
 
 ## 🏗️ Arquitectura General del Sistema
 
-El sistema integra las siguientes tecnologías distribuidas en sus dos fases de análisis:
-
-| Capa / Componente | Tecnología | Detalle Técnico |
-| :--- | :--- | :--- |
-| **Backend** | ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk) ![Spring](https://img.shields.io/badge/Spring_Boot-3.0-green?logo=springboot) | Implementación de **Virtual Threads** para alta concurrencia y controladores REST eficientes. |
-| **Balanceador (Etapa 2)** | ![NGINX](https://img.shields.io/badge/NGINX-Reverse__Proxy-009639?logo=nginx) | Configurado localmente como Proxy Inverso usando **Round Robin** en el puerto `8080`. |
-| **Persistencia** | ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql) | Motor relacional centralizado para optimización e integridad de datos. |
-| **Cloud/Edge (Etapa 1)** | ![Railway](https://img.shields.io/badge/Cloud-Railway-7E33FF?logo=railway) ![Fastly](https://img.shields.io/badge/CDN-Fastly-red?logo=fastly) | Terminación TLS regional en nodo **GRU (Brasil)** para reducción de latencia en producción. |
-| **Seguridad (Etapa 1)** | ![TLS](https://img.shields.io/badge/Security-TLS_1.3-blue) ![SSL](https://img.shields.io/badge/Cert-Let's_Encrypt-003366) | Negociación forzada de cifrado y headers de seguridad nativos. |
-| **Pruebas (Etapa 2)** | ![JMeter](https://img.shields.io/badge/Apache-JMeter-D22128?logo=apachejmeter) | Entorno experimental para pruebas de estrés, latencias y tolerancia a fallos (*Failover*). |
-| **API REST (Entrega Final)** | CRUD Completo | Endpoints GET, POST, PUT, DELETE para gestión de productos con auto-categorización por IA. |
+| Capa / Componente | Tecnología |
+| :--- | :--- |
+| **Backend** | Java 21, Spring Boot 3.0, Virtual Threads |
+| **Balanceador (Etapa 2)** | NGINX Reverse Proxy (Round Robin, puerto 8080) |
+| **Persistencia** | PostgreSQL |
+| **Cloud/Edge (Etapa 1)** | Railway + Fastly CDN (nodo GRU - Brasil) |
+| **Seguridad (Etapa 1)** | TLS 1.3, Let's Encrypt |
+| **Pruebas (Etapa 2)** | Apache JMeter (1000 usuarios concurrentes) |
+| **Fidelización (Entrega Final)** | 11 entidades, 15 servicios, 14 controladores REST |
 
 ---
 
-## 📊 Dimensiones del Experimento (Evidencia de Laboratorio)
+## 📊 Módulos del Sistema
 
-### 🚀 Módulos de la Etapa 1 (Cloud & Red externa)
-* **Seguridad e Integridad:** Verificación de Certificados Digitales, ciclos de *Handshake* TLS y validación de identidad del servidor remoto.
-* **Red e Infraestructura:** Estudio de enrutamiento (BGP), tránsito y saltos intermedios desde el **ISP local (Paraguay)** hacia nodos de borde internacionales mediante `traceroute`.
-* **Ciclo DevOps:** Gestión de infraestructura virtualizada en contenedores y pipeline de **Despliegue Continuo (CI/CD)** automatizado a Railway.
+### 🚀 Etapa 1 — Cloud & Red externa
+* Verificación de Certificados Digitales, handshake TLS 1.3
+* Estudio de enrutamiento BGP desde Paraguay a nodos edge
+* Pipeline CI/CD automatizado a Railway
 
-### 🛠️ Módulos de la Etapa 2 (Infraestructura Local & Balanceo)
-* **Alta Disponibilidad y Failover Pasivo:** Configuración de directivas de tiempo de espera (`proxy_connect_timeout` y `proxy_read_timeout`) en NGINX para mitigar la degradación del servicio ante caídas de nodos en pleno procesamiento de ráfagas.
-* **Evaluación bajo Estrés:** Recopilación de métricas clave (Percentiles P50, P90, P99 y Tasa de Error %) a través de planes de pruebas concurrentes en JMeter para identificar cuellos de botella sistémicos.
+### 🛠️ Etapa 2 — Infraestructura Local & Balanceo
+* Alta disponibilidad con NGINX + Round Robin (app-1:8081, app-2:8082)
+* Failover pasivo con timeouts configurables
+* Stress test con JMeter, percentiles P50/P90/P99
 
-### 🏁 Módulos de la Entrega Final (API REST & Capa de Servicios)
-* **Capa de Servicios (`@Service`):** Separación de la lógica de negocio en servicios dedicados (`StatusService`, `GeneradorService`, `CategorizadorService`, `ImagenService`, `ProductoService`).
-* **CRUD Completo:** Endpoints `GET`, `POST`, `PUT`, `DELETE` para la entidad `Producto` con persistencia en PostgreSQL.
-* **Auto-categorización con IA:** Al crear un producto sin categoría, el sistema la determina automáticamente usando OpenAI GPT-4o.
-* **Documentación interactiva:** Swagger UI disponible en `/swagger-ui/index.html`.
+### 🏁 Entrega Final — Sistema de Fidelización de Clientes
 
----
-
-## 🔗 Acceso y Documentación en Producción (Etapa 1)
-* 🔗 **App en Producción:** [Acceder a Ecomart Live](https://trazabilidad-end-to-end-production.up.railway.app/)
-* 📜 **Documentación API:** `/swagger-ui/index.html` (Basado en el estándar OpenAPI 3.0)
-
----
-
-## 🛠️ Guía de Ejecución Local (Etapa 2)
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/natimoon/trazabilidad-end-to-end.git
-   cd trazabilidad-end-to-end
-   ```
-
-2. **Configurar la clave de OpenAI:**
-   ```bash
-   export OPENAI_API_KEY=sk-...
-   ```
-
-3. **Iniciar todos los servicios** (compila, crea las imágenes y levanta los contenedores):
-   ```bash
-   cd "Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna"
-   ./start.sh
-   ```
-
-4. **Probar el balanceador:**
-   ```bash
-   for i in {1..10}; do curl -s http://localhost:8080/instancia; echo; sleep 0.5; done
-   ```
-   Verás cómo alterna entre `"puerto":"8081"` y `"puerto":"8082"`.
-
-5. **Ejecutar stress test con JMeter:**
-   ```bash
-   jmeter -n -t load-test-plan.jmx -l resultados.csv
-   ```
-
-6. **Probar failover** (tolerancia a fallos):
-   ```bash
-   ./failover-test.sh
-   ```
-
-7. **Verificar distribución Round Robin:**
-   ```bash
-   ./test-balanceador.sh
-   ```
-
-8. **Detener los servicios:**
-   ```bash
-   docker compose down
-   ```
+| Módulo | Descripción |
+|--------|-------------|
+| **CRUD Clientes** | ABMC con niveles (Bronce/Plata/Oro/Platino), ciudad, referidos |
+| **Bolsa de Puntos** | Asignación automática por compras, vencimiento programado |
+| **Uso FIFO** | Consume bolsas más antiguas primero |
+| **Canje** | Catálogo de productos sincronizado con IA, canje de puntos |
+| **Compras** | Integración con AI & Balanceo, dispara asignación de puntos |
+| **Segmentación** | Por nivel, puntos, ciudad, nacionalidad, categoría IA |
+| **Dashboard** | KPIs en tiempo real (puntos activos, canjes, distribución) |
+| **Encuestas** | Satisfacción 1-5 con comentarios |
+| **Configuración** | Reglas de puntos, vencimientos, conceptos de uso |
 
 ---
 
-## 🧱 Arquitectura en Capas
+## 🔗 Acceso en Producción
 
-El backend sigue una arquitectura en capas separando la responsabilidad de cada componente:
+| Recurso | URL |
+|---------|-----|
+| Página principal | [https://trazabilidad-end-to-end-production.up.railway.app/](https://trazabilidad-end-to-end-production.up.railway.app/) |
+| Sistema de Fidelización | [https://trazabilidad-end-to-end-production.up.railway.app/fidelizacion.html](https://trazabilidad-end-to-end-production.up.railway.app/fidelizacion.html) |
+| Swagger UI | [https://trazabilidad-end-to-end-production.up.railway.app/swagger-ui/index.html](https://trazabilidad-end-to-end-production.up.railway.app/swagger-ui/index.html) |
+| Dashboard API | [https://trazabilidad-end-to-end-production.up.railway.app/api/dashboard](https://trazabilidad-end-to-end-production.up.railway.app/api/dashboard) |
 
-| Capa | Paquete | Responsabilidad |
-|---|---|---|
-| **Controller** | `Controller/` | Recibe peticiones HTTP, delega en servicios, devuelve respuestas |
-| **Service** | `service/` | Contiene la lógica de negocio (llamadas a OpenAI, token counting, CRUD) |
-| **Repository** | `repository/` | Acceso a la base de datos (JPA) |
-| **Model** | `model/` | Entidades que representan las tablas de la BD |
-
-```
-HTTP Request → Controller → Service → Repository → PostgreSQL
-                              ↓
-                         OpenAI / DALL-E
-```
+---
 
 ## 📡 Endpoints de la API
 
+### AI & Balanceo (Etapas 1-2)
+
 | Método | Endpoint | Descripción |
-|---|---|---|
-| **GET** | `/api/productos` | Listar todos los productos |
-| **GET** | `/api/productos/{id}` | Obtener un producto por ID |
-| **POST** | `/api/productos` | Crear un producto (auto-categorización IA) |
-| **PUT** | `/api/productos/{id}` | Actualizar un producto |
-| **DELETE** | `/api/productos/{id}` | Eliminar un producto |
-| GET | `/generador` | Generar 5 productos ecológicos con IA |
-| GET | `/categorizador?producto=` | Clasificar un producto en categorías |
-| GET | `/imagen?prompt=` | Generar una imagen con DALL-E |
-| GET | `/instancia` | Información de la instancia activa |
-| GET | `/api/health` | Health check del servidor |
+|--------|----------|-------------|
+| GET | `/api/productos` | Listar productos |
+| GET | `/api/productos/{id}` | Producto por ID |
+| POST | `/api/productos` | Crear (auto-categorización IA) |
+| PUT | `/api/productos/{id}` | Actualizar |
+| DELETE | `/api/productos/{id}` | Eliminar |
+| GET | `/generador` | Generar 5 productos ecológicos |
+| GET | `/categorizador?producto=` | Clasificar producto |
+| GET | `/imagen?prompt=` | Generar imagen DALL-E |
+| GET | `/instancia` | Info de instancia activa |
+| GET | `/api/health` | Health check |
+
+### Sistema de Fidelización
+
+#### Clientes
+| Método | Endpoint |
+|--------|----------|
+| GET/POST/DELETE | `/api/clientes` |
+| POST | `/api/clientes/importar` |
+| GET | `/api/clientes/segmentar/nivel?nivel=` |
+| GET | `/api/clientes/segmentar/puntos?min=&max=` |
+| GET | `/api/clientes/segmentar/ciudad?ciudad=` |
+| GET | `/api/clientes/segmentar/categoria?categoria=` |
+| GET | `/api/clientes/{id}/referidos` |
+
+#### Puntos / Bolsas / Compras / Canje
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/puntos/cargar` | Cargar puntos |
+| POST | `/api/puntos/usar` | Usar puntos (FIFO) |
+| POST | `/api/compras` | Comprar + ganar puntos |
+| POST | `/api/canje` | Canjear puntos por producto |
+| POST | `/api/productos-canje/sincronizar` | Sync catálogo desde IA |
+| GET | `/api/dashboard` | KPIs del sistema |
+
+> 📖 **Ver la documentación completa de todos los endpoints** (incluyendo GET por ID, búsquedas, segmentación, configuraciones y encuestas) en el [`README.md`](./Sistema%20Inteligente%20de%20Procesamiento%20de%20Consultas%20basado%20en%20Arquitectura%20Web%20Moderna/README.md) dentro de la carpeta del módulo.
 
 ---
 
-## 🧪 Cómo Probar la API REST (Entrega Final)
+## 💡 Flujo Completo (Demostración)
 
-Los endpoints están disponibles en Railway sin necesidad de instalar nada:
-
-```bash
-# Health check
-curl https://trazabilidad-end-to-end-production.up.railway.app/api/health
-
-# GET - Listar productos
-curl https://trazabilidad-end-to-end-production.up.railway.app/api/productos
-
-# POST - Crear producto (se auto-categoriza con IA)
-curl -X POST https://trazabilidad-end-to-end-production.up.railway.app/api/productos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Zapatillas running","descripcion":"Zapatillas deportivas ligeras"}'
-
-# GET - Obtener por ID
-curl https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1
-
-# PUT - Actualizar
-curl -X PUT https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1 \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Zapatillas running","descripcion":"Modelo 2026","categoria":"Deportes"}'
-
-# DELETE - Eliminar
-curl -X DELETE https://trazabilidad-end-to-end-production.up.railway.app/api/productos/1
+```
+1. Crear producto en AI & Balanceo → se auto-categoriza + agrega al catálogo de canje
+2. Crear o importar clientes
+3. Configurar ReglaPuntos (ej: cada 1000 Gs = 1 punto)
+4. Configurar Vencimiento (ej: 365 días)
+5. Sincronizar catálogo de canje
+6. Comprar: cliente compra producto → puntos se asignan automáticamente
+7. Segmentar: filtrar clientes por nivel, ciudad o categoría IA
+8. Canjear: cliente canjea puntos por productos
+9. Dashboard: visualizar KPIs
 ```
 
-También podés probar desde el navegador en la página principal y desde Swagger:
-- 🔗 **Web:** https://trazabilidad-end-to-end-production.up.railway.app/
-- 📜 **Swagger:** https://trazabilidad-end-to-end-production.up.railway.app/swagger-ui/index.html
-
 ---
 
-## 🧪 Pruebas de Stress (JMeter)
+## 🛠️ Guía de Ejecución Local
 
-Se incluye un plan de pruebas (`load-test-plan.jmx`) que simula **1000 usuarios concurrentes** con ramp-up de 30s, probando 3 endpoints:
-- `GET /generador` (40% del tráfico)
-- `GET /categorizador?producto=XXX` (30%)
-- `GET /imagen?prompt=XXX` (30%)
+```bash
+# 1. Clonar
+git clone https://github.com/natimoon/trazabilidad-end-to-end.git
+cd trazabilidad-end-to-end
 
-Los resultados incluyen percentiles P50, P90, P99 y tasa de error, exportados a CSV.
+# 2. Configurar clave OpenAI
+export OPENAI_API_KEY=sk-...
+
+# 3. Iniciar servicios (compila, crea imágenes, levanta contenedores)
+cd "Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna"
+./start.sh
+
+# 4. Probar balanceador
+for i in {1..10}; do curl -s http://localhost:8080/instancia; echo; sleep 0.5; done
+
+# 5. Stress test
+jmeter -n -t load-test-plan.jmx -l resultados.csv
+
+# 6. Detener
+docker compose down
+```
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
-📦 Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna
-├── src/                          # Código fuente Spring Boot
-│   └── main/java/.../
-│       ├── EcomartApplication.java
-│       ├── Controller/                     # Capa de presentación (HTTP)
-│       │   ├── StatusController.java        # /instancia, /api/health
-│       │   ├── ProductoController.java      # CRUD: GET, POST, PUT, DELETE
-│       │   ├── GeneradorDeProductosController.java  # /generador
-│       │   ├── CategorizadorDeProductosController.java # /categorizador
-│       │   └── GeneradorDeImagenesController.java   # /imagen
-│       ├── service/                        # Capa de servicios (lógica de negocio)
-│       │   ├── StatusService.java
-│       │   ├── ProductoService.java         # CRUD con auto-categorización
-│       │   ├── GeneradorService.java
-│       │   ├── CategorizadorService.java
-│       │   └── ImagenService.java
-│       ├── repository/                     # Capa de persistencia
-│       │   └── ProductoRepository.java
-│       └── model/                          # Entidades de base de datos
-│           └── Producto.java
-├── docker-compose.yml            # Orquestación (app-1, app-2, nginx, db)
-├── Dockerfile                    # Build multi-etapa de Spring Boot
-├── nginx.conf                    # Config local del balanceador
-├── nginx-docker.conf             # Config Docker del balanceador
-├── load-test-plan.jmx            # Stress test JMeter (1000 usuarios)
-├── HTTP Request.jmx              # Test simple JMeter
-├── start.sh                      # Script de inicio automatizado
-├── test-balanceador.sh           # Verifica distribución Round Robin
-└── failover-test.sh              # Demostración de tolerancia a fallos
+📦 trazabilidad-end-to-end (raíz del repo)
+├── Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna/
+│   ├── src/main/java/.../
+│   │   ├── Controller/          (14 controladores REST)
+│   │   ├── service/             (15 servicios)
+│   │   ├── repository/          (12 repositorios JPA)
+│   │   └── model/               (11 entidades)
+│   ├── src/main/resources/static/
+│   │   ├── index.html           (Frontend AI & Balanceo)
+│   │   └── fidelizacion.html    (Frontend Fidelización - 7 pestañas)
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── load-test-plan.jmx
+│   └── start.sh
+└── README.md                    (este archivo)
 ```
+
+---
+
+## 🧪 Probar con curl
+
+```bash
+# Health check
+curl https://trazabilidad-end-to-end-production.up.railway.app/api/health
+
+# Crear producto
+curl -X POST https://trazabilidad-end-to-end-production.up.railway.app/api/productos \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Zapatillas","precio":80000}'
+
+# Dashboard fidelización
+curl https://trazabilidad-end-to-end-production.up.railway.app/api/dashboard
+
+# Segmentar por categoría IA
+curl "https://trazabilidad-end-to-end-production.up.railway.app/api/clientes/segmentar/categoria?categoria=Deportes"
+```
+
+---
+
+## 📄 Documentación Detallada
+
+Para la documentación exhaustiva del **Sistema de Fidelización** con:
+
+- Lista completa de los **40+ archivos** del módulo
+- Todos los **endpoints** con métodos, rutas y bodies
+- Descripción de cada **entidad, servicio y controlador**
+- **KPIs** del dashboard
+- **Puntaje** de tópicos adicionales
+
+👉 Ingresá a [`Sistema Inteligente de Procesamiento de Consultas basado en Arquitectura Web Moderna/`](./Sistema%20Inteligente%20de%20Procesamiento%20de%20Consultas%20basado%20en%20Arquitectura%20Web%20Moderna/) y abrí su `README.md`.
