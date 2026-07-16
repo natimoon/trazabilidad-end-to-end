@@ -59,6 +59,9 @@ public class ClienteService {
         cliente.setEmail(actualizado.getEmail());
         cliente.setTelefono(actualizado.getTelefono());
         cliente.setFechaNacimiento(actualizado.getFechaNacimiento());
+        if (actualizado.getReferidoPorId() != null) {
+            cliente.setReferidoPorId(actualizado.getReferidoPorId());
+        }
         return clienteRepository.save(cliente);
     }
 
