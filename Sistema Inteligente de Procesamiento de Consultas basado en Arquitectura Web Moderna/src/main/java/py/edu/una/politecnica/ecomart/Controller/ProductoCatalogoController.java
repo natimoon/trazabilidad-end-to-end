@@ -5,7 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import py.edu.una.politecnica.ecomart.model.ProductoCatalogo;
 import py.edu.una.politecnica.ecomart.service.ProductoCatalogoService;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/productos-canje")
@@ -23,6 +25,15 @@ public class ProductoCatalogoController {
     @GetMapping("/disponibles")
     public ResponseEntity<List<ProductoCatalogo>> listarDisponibles() {
         return ResponseEntity.ok(service.listarDisponibles());
+    }
+
+    @PostMapping("/sincronizar")
+    public ResponseEntity<Map<String, Object>> sincronizar() {
+        int agregados = service.sincronizarDesdeProductos();
+        Map<String, Object> res = new HashMap<>();
+        res.put("agregados", agregados);
+        res.put("mensaje", agregados + " producto(s) sincronizado(s) al catálogo de canje");
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{id}")
