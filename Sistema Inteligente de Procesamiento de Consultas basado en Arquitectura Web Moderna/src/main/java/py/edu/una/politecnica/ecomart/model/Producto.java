@@ -17,6 +17,7 @@ public class Producto {
     private String nombre;
     private String descripcion;
     private String categoria;
+    private Double precio;
     private String imagenUrl;
     private LocalDateTime createdAt;
 
@@ -36,6 +37,9 @@ public class Producto {
 
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
+
+    public Double getPrecio() { return precio; }
+    public void setPrecio(Double precio) { this.precio = precio; }
 
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }

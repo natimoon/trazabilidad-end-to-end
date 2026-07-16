@@ -84,4 +84,9 @@ public class ClienteController {
     public ResponseEntity<List<Cliente>> segmentarPorCiudad(@RequestParam String ciudad) {
         return ResponseEntity.ok(clienteService.segmentarPorCiudad(ciudad));
     }
+
+    @GetMapping("/segmentar/categoria")
+    public ResponseEntity<List<Cliente>> segmentarPorCategoria(@RequestParam String categoria) {
+        return ResponseEntity.ok(clienteService.segmentarPorCategoria(categoria));
+    }
 }

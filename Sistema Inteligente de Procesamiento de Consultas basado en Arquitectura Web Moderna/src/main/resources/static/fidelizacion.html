@@ -170,6 +170,7 @@
             <li class="nav-item"><button class="nav-link" data-tab="clientes">Clientes</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="puntos">Puntos</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="canje">Canje</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="compras">Compras</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="encuestas">Encuestas</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="config">Configuración</button></li>
         </ul>
@@ -403,6 +404,45 @@
                             <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarCanjes()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
                         </div>
                         <div class="card-b" style="max-height:400px;overflow-y:auto;" id="canjes-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== COMPRAS ==================== -->
+        <div class="tab-content-section" id="tab-compras">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="section-card">
+                        <div class="card-h"><span>🛒</span> Nueva Compra</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="compra-cliente" placeholder="ID Cliente" type="number"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="compra-producto" placeholder="ID Producto (catálogo original)" type="number"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mt-3" onclick="realizarCompra()">Comprar y Ganar Puntos</button>
+                            <div class="result-box" id="res-compra"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>🔍</span> Segmentar por Categoría IA</div>
+                        <div class="card-b">
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="seg-categoria" placeholder="Ej: Electronicos" style="width:140px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarCategoria()">Buscar</button>
+                            </div>
+                            <div style="font-size:0.75rem;color:#64748b;">Categorías: Higiene Personal, Electronicos, Deportes, Prendas de vestir, Otros</div>
+                            <div class="result-box" id="res-seg-categoria"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>📋</span> Historial de Compras
+                            <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarCompras()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                        </div>
+                        <div class="card-b" style="max-height:450px;overflow-y:auto;" id="compras-table"></div>
                     </div>
                 </div>
             </div>
@@ -905,6 +945,71 @@ async function listarCanjes() {
         }
     } catch(e) {
         document.getElementById('canjes-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar</div>';
+    }
+}
+
+// ==================== COMPRAS ====================
+async function realizarCompra() {
+    const body = {
+        clienteId: parseInt(document.getElementById('compra-cliente').value),
+        productoId: parseInt(document.getElementById('compra-producto').value)
+    };
+    if (!body.clienteId || !body.productoId) {
+        showResult('res-compra', 'Cliente ID y Producto ID obligatorios', true); return;
+    }
+    showLoading('res-compra');
+    try {
+        const data = await api('/api/compras', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-compra', `✅ ${data.mensaje || 'Compra exitosa'}\n${JSON.stringify(data, null, 2)}`);
+        document.getElementById('compra-cliente').value = '';
+        document.getElementById('compra-producto').value = '';
+        listarCompras();
+        cargarDashboard();
+    } catch (e) { showResult('res-compra', e.message, true); }
+}
+
+async function listarCompras() {
+    try {
+        const data = await api('/api/compras');
+        const div = document.getElementById('compras-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin compras registradas</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Monto</th><th>Puntos</th><th>Fecha</th></tr>';
+            for (const c of data) {
+                h += `<tr>
+                    <td>${c.id}</td>
+                    <td>#${c.clienteId || '-'}</td>
+                    <td>#${c.productoId || '-'}</td>
+                    <td><strong>Gs ${(c.monto || 0).toLocaleString()}</strong></td>
+                    <td><span style="color:#10b981;">+${c.puntosGanados || 0}</span></td>
+                    <td style="font-size:0.75rem;">${c.fecha || '-'}</td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) {
+        document.getElementById('compras-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error al cargar</div>';
+    }
+}
+
+async function segmentarCategoria() {
+    const cat = document.getElementById('seg-categoria').value.trim();
+    if (!cat) { showResult('res-seg-categoria', 'Ingrese categoría', true); return; }
+    const el = document.getElementById('res-seg-categoria');
+    el.className = 'result-box show';
+    el.textContent = 'Procesando...';
+    try {
+        const data = await api(`/api/clientes/segmentar/categoria?categoria=${encodeURIComponent(cat)}`);
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) compraron en "${cat}": ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) {
+        el.style.color = '#ef4444';
+        el.textContent = '❌ ' + e.message;
     }
 }
 

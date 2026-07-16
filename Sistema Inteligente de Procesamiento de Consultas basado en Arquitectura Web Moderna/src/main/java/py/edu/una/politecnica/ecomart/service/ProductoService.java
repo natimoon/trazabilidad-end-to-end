@@ -2,6 +2,8 @@ package py.edu.una.politecnica.ecomart.service;
 
 import org.springframework.stereotype.Service;
 import py.edu.una.politecnica.ecomart.model.Producto;
+import py.edu.una.politecnica.ecomart.model.ProductoCatalogo;
+import py.edu.una.politecnica.ecomart.repository.ProductoCatalogoRepository;
 import py.edu.una.politecnica.ecomart.repository.ProductoRepository;
 import java.util.List;
 
@@ -9,10 +11,14 @@ import java.util.List;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final ProductoCatalogoRepository catalogoRepository;
     private final CategorizadorService categorizadorService;
 
-    public ProductoService(ProductoRepository productoRepository, CategorizadorService categorizadorService) {
+    public ProductoService(ProductoRepository productoRepository,
+                           ProductoCatalogoRepository catalogoRepository,
+                           CategorizadorService categorizadorService) {
         this.productoRepository = productoRepository;
+        this.catalogoRepository = catalogoRepository;
         this.categorizadorService = categorizadorService;
     }
 
@@ -30,7 +36,16 @@ public class ProductoService {
             String categoria = categorizadorService.categorizarProducto(producto.getNombre());
             producto.setCategoria(categoria);
         }
-        return productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
+
+        ProductoCatalogo catalogo = new ProductoCatalogo();
+        catalogo.setNombre(guardado.getNombre());
+        catalogo.setDescripcion(guardado.getDescripcion());
+        catalogo.setPuntosRequeridos(10);
+        catalogo.setStock(5);
+        catalogoRepository.save(catalogo);
+
+        return guardado;
     }
 
     public Producto actualizar(Long id, Producto productoActualizado) {

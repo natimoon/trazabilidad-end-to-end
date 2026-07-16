@@ -3,17 +3,27 @@ package py.edu.una.politecnica.ecomart.service;
 import org.springframework.stereotype.Service;
 import py.edu.una.politecnica.ecomart.model.Cliente;
 import py.edu.una.politecnica.ecomart.repository.ClienteRepository;
+import py.edu.una.politecnica.ecomart.repository.CompraRepository;
+import py.edu.una.politecnica.ecomart.repository.ProductoRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final CompraRepository compraRepository;
+    private final ProductoRepository productoRepository;
 
-    public ClienteService(ClienteRepository clienteRepository) {
+    public ClienteService(ClienteRepository clienteRepository,
+                          CompraRepository compraRepository,
+                          ProductoRepository productoRepository) {
         this.clienteRepository = clienteRepository;
+        this.compraRepository = compraRepository;
+        this.productoRepository = productoRepository;
     }
 
     public List<Cliente> listarTodos() {
@@ -79,6 +89,17 @@ public class ClienteService {
 
     public List<Cliente> segmentarPorCiudad(String ciudad) {
         return clienteRepository.findByCiudadContainingIgnoreCase(ciudad);
+    }
+
+    public List<Cliente> segmentarPorCategoria(String categoria) {
+        List<Long> productoIds = productoRepository.findByCategoria(categoria).stream()
+                .map(p -> p.getId()).collect(Collectors.toList());
+        if (productoIds.isEmpty()) return new ArrayList<>();
+        List<Long> clienteIds = compraRepository.findClienteIdsByProductoIdIn(productoIds);
+        return clienteIds.stream()
+                .map(id -> clienteRepository.findById(id).orElse(null))
+                .filter(c -> c != null)
+                .collect(Collectors.toList());
     }
 
     public List<Cliente> obtenerReferidos(Long clienteId) {
