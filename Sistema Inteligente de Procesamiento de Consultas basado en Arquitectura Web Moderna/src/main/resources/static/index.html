@@ -560,6 +560,10 @@
                                 <input type="text" class="form-control form-control-sm" id="input-categoria"
                                        placeholder="Categoria" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
                             </div>
+                            <div class="mb-2">
+                                <input type="number" class="form-control form-control-sm" id="input-precio"
+                                       placeholder="Precio (Gs)" style="background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);color:#e0e7ff;">
+                            </div>
                             <button class="btn btn-success btn-test w-100" onclick="crearProducto()">
                                 POST /api/productos
                             </button>
@@ -768,12 +772,13 @@ async function listarProductos() {
         let html = '<table style="width:100%;font-size:0.85rem;border-collapse:collapse;">';
         html += '<tr style="color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06);">';
         html += '<th style="padding:8px 4px;text-align:left;">ID</th><th style="padding:8px 4px;text-align:left;">Nombre</th>';
-        html += '<th style="padding:8px 4px;text-align:left;">Categoria</th><th style="padding:8px 4px;text-align:right;">Accion</th></tr>';
+        html += '<th style="padding:8px 4px;text-align:left;">Categoria</th><th style="padding:8px 4px;text-align:right;">Precio</th><th style="padding:8px 4px;text-align:right;">Accion</th></tr>';
         for (const p of productos) {
             html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">`;
             html += `<td style="padding:8px 4px;">${p.id}</td>`;
             html += `<td style="padding:8px 4px;">${p.nombre || '-'}</td>`;
             html += `<td style="padding:8px 4px;">${p.categoria || '-'}</td>`;
+            html += `<td style="padding:8px 4px;text-align:right;">${p.precio ? 'Gs ' + Number(p.precio).toLocaleString() : '-'}</td>`;
             html += `<td style="padding:8px 4px;text-align:right;">
                 <button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarProducto(${p.id})">🗑</button>
             </td></tr>`;
@@ -791,6 +796,7 @@ async function crearProducto() {
     const nombre = document.getElementById('input-nombre').value.trim();
     const descripcion = document.getElementById('input-descripcion').value.trim();
     const categoria = document.getElementById('input-categoria').value.trim();
+    const precio = parseFloat(document.getElementById('input-precio').value) || null;
     const resultDiv = document.getElementById('result-crear');
 
     if (!nombre) { resultDiv.className = 'api-result show'; resultDiv.textContent = '⚠ El nombre es obligatorio'; return; }
@@ -802,7 +808,7 @@ async function crearProducto() {
         const res = await fetch('/api/productos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, descripcion, categoria })
+            body: JSON.stringify({ nombre, descripcion, categoria, precio })
         });
         const data = await res.json();
         resultDiv.className = 'api-result show';
@@ -810,6 +816,7 @@ async function crearProducto() {
         document.getElementById('input-nombre').value = '';
         document.getElementById('input-descripcion').value = '';
         document.getElementById('input-categoria').value = '';
+        document.getElementById('input-precio').value = '';
         listarProductos();
     } catch {
         resultDiv.className = 'api-result show';
