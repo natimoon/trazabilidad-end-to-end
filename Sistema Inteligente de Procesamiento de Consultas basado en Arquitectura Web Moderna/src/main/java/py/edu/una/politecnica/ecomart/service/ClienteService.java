@@ -39,9 +39,13 @@ public class ClienteService {
         if (cliente.getCodigoReferido() == null || cliente.getCodigoReferido().isBlank()) {
             cliente.setCodigoReferido("REF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
-        cliente.setNivel("Bronce");
-        cliente.setPuntosAcumulados(0);
+        if (cliente.getNivel() == null) cliente.setNivel("Bronce");
+        if (cliente.getPuntosAcumulados() == null) cliente.setPuntosAcumulados(0);
         return clienteRepository.save(cliente);
+    }
+
+    public List<Cliente> importarMasivo(List<Cliente> clientes) {
+        return clientes.stream().map(this::crear).toList();
     }
 
     public Cliente actualizar(Long id, Cliente actualizado) {

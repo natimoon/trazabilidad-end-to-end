@@ -32,6 +32,11 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.crear(cliente));
     }
 
+    @PostMapping("/importar")
+    public ResponseEntity<List<Cliente>> importarMasivo(@RequestBody List<Cliente> clientes) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.importarMasivo(clientes));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> actualizar(@PathVariable Long id, @RequestBody Cliente cliente) {
         return ResponseEntity.ok(clienteService.actualizar(id, cliente));

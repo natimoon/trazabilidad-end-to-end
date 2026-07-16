@@ -265,6 +265,17 @@
                         </div>
                     </div>
                     <div class="section-card">
+                        <div class="card-h"><span>📦</span> Importar Clientes (JSON)</div>
+                        <div class="card-b">
+                            <textarea class="form-control form-control-sm" id="cli-json" rows="4" placeholder='[
+  {"nombre":"Juan","apellido":"Perez","nroDocumento":"123","email":"juan@mail.com","ciudad":"Asunción","nacionalidad":"Paraguaya"},
+  {"nombre":"Maria","apellido":"Gomez","nroDocumento":"456","email":"maria@mail.com","ciudad":"Encarnación","nacionalidad":"Paraguaya"}
+]'></textarea>
+                            <button class="btn btn-primary btn-custom w-100 mt-2" onclick="importarClientes()">Importar</button>
+                            <div class="result-box" id="res-importar-clientes"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
                         <div class="card-h"><span>🔍</span> Segmentar Clientes</div>
                         <div class="card-b">
                             <div class="d-flex gap-2 flex-wrap mb-2">
@@ -681,6 +692,24 @@ async function crearCliente() {
         listarClientes();
         cargarDashboard();
     } catch (e) { showResult('res-crear-cliente', e.message, true); }
+}
+
+async function importarClientes() {
+    const json = document.getElementById('cli-json').value.trim();
+    if (!json) { showResult('res-importar-clientes', 'Pegá el JSON', true); return; }
+    showLoading('res-importar-clientes');
+    try {
+        const data = JSON.parse(json);
+        if (!Array.isArray(data)) { showResult('res-importar-clientes', 'Debe ser un array JSON', true); return; }
+        const res = await api('/api/clientes/importar', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+        });
+        showResult('res-importar-clientes', `✅ ${res.length} cliente(s) importados`);
+        document.getElementById('cli-json').value = '';
+        listarClientes();
+        cargarDashboard();
+    } catch (e) { showResult('res-importar-clientes', e.message, true); }
 }
 
 async function eliminarCliente(id) {
