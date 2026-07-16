@@ -9,7 +9,10 @@ import py.edu.una.politecnica.ecomart.repository.CanjePuntosRepository;
 import py.edu.una.politecnica.ecomart.repository.ClienteRepository;
 import py.edu.una.politecnica.ecomart.repository.ProductoCatalogoRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CanjeService {
@@ -61,11 +64,31 @@ public class CanjeService {
         return canjeRepository.save(canje);
     }
 
-    public List<CanjePuntos> listarPorCliente(Long clienteId) {
-        return canjeRepository.findByClienteId(clienteId);
+    public List<Map<String, Object>> listarPorCliente(Long clienteId) {
+        List<CanjePuntos> canjes = canjeRepository.findByClienteId(clienteId);
+        return enriquecerCanjes(canjes);
     }
 
-    public List<CanjePuntos> listarTodos() {
-        return canjeRepository.findAll();
+    public List<Map<String, Object>> listarTodos() {
+        List<CanjePuntos> canjes = canjeRepository.findAll();
+        return enriquecerCanjes(canjes);
+    }
+
+    private List<Map<String, Object>> enriquecerCanjes(List<CanjePuntos> canjes) {
+        List<Map<String, Object>> resultado = new ArrayList<>();
+        for (CanjePuntos c : canjes) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", c.getId());
+            item.put("clienteId", c.getClienteId());
+            item.put("productoId", c.getProductoId());
+            item.put("puntosUtilizados", c.getPuntosUtilizados());
+            item.put("fecha", c.getFecha());
+            String nombreProducto = productoRepository.findById(c.getProductoId())
+                    .map(ProductoCatalogo::getNombre)
+                    .orElse(null);
+            item.put("productoNombre", nombreProducto);
+            resultado.add(item);
+        }
+        return resultado;
     }
 }

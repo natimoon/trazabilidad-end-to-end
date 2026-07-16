@@ -25,12 +25,12 @@ public class CanjeController {
     }
 
     @GetMapping("/cliente/{clienteId}")
-    public ResponseEntity<List<CanjePuntos>> listarPorCliente(@PathVariable Long clienteId) {
+    public ResponseEntity<List<Map<String, Object>>> listarPorCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(canjeService.listarPorCliente(clienteId));
     }
 
     @GetMapping
-    public ResponseEntity<List<CanjePuntos>> listarTodos() {
+    public ResponseEntity<List<Map<String, Object>>> listarTodos() {
         return ResponseEntity.ok(canjeService.listarTodos());
     }
 }

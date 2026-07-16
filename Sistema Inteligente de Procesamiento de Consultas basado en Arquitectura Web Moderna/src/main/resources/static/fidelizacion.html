@@ -973,7 +973,7 @@ async function listarCanjes() {
                 h += `<tr>
                     <td>${c.id}</td>
                     <td>#${c.clienteId || '-'}</td>
-                    <td>${c.productoCatalogoId || '-'}</td>
+                    <td>${c.productoNombre || '#' + (c.productoId || '-')}</td>
                     <td><strong>${c.puntosUtilizados || 0}</strong></td>
                     <td style="font-size:0.75rem;">${c.fechaCanje || c.fecha || '-'}</td>
                 </tr>`;
