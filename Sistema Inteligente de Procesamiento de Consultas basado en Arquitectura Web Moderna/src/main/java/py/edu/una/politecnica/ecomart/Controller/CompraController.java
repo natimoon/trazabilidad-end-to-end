@@ -19,14 +19,18 @@ public class CompraController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> comprar(@RequestBody Map<String, Long> body) {
+    public ResponseEntity<?> comprar(@RequestBody Map<String, Long> body) {
         Long clienteId = body.get("clienteId");
         Long productoId = body.get("productoId");
         if (clienteId == null || productoId == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "clienteId y productoId son requeridos"));
         }
-        Map<String, Object> resultado = compraService.comprar(clienteId, productoId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
+        try {
+            Map<String, Object> resultado = compraService.comprar(clienteId, productoId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping

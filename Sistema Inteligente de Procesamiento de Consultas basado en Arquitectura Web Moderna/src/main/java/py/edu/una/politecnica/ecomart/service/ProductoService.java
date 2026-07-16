@@ -55,6 +55,7 @@ public class ProductoService {
         if (productoActualizado.getCategoria() != null && !productoActualizado.getCategoria().isBlank()) {
             producto.setCategoria(productoActualizado.getCategoria());
         }
+        producto.setPrecio(productoActualizado.getPrecio());
         producto.setImagenUrl(productoActualizado.getImagenUrl());
         return productoRepository.save(producto);
     }

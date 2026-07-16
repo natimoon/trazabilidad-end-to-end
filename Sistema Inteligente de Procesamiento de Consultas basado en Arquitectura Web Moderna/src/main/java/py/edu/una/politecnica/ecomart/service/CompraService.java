@@ -12,6 +12,7 @@ import py.edu.una.politecnica.ecomart.repository.ClienteRepository;
 import py.edu.una.politecnica.ecomart.repository.CompraRepository;
 import py.edu.una.politecnica.ecomart.repository.ParametroVencimientoRepository;
 import py.edu.una.politecnica.ecomart.repository.ProductoRepository;
+import py.edu.una.politecnica.ecomart.service.PromocionService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class CompraService {
     private final ParametroVencimientoRepository vencimientoRepository;
     private final BolsaPuntosRepository bolsaRepository;
     private final ClienteService clienteService;
+    private final PromocionService promocionService;
 
     public CompraService(CompraRepository compraRepository,
                          ClienteRepository clienteRepository,
@@ -35,7 +37,8 @@ public class CompraService {
                          ReglaPuntosService reglaPuntosService,
                          ParametroVencimientoRepository vencimientoRepository,
                          BolsaPuntosRepository bolsaRepository,
-                         ClienteService clienteService) {
+                         ClienteService clienteService,
+                         PromocionService promocionService) {
         this.compraRepository = compraRepository;
         this.clienteRepository = clienteRepository;
         this.productoRepository = productoRepository;
@@ -43,6 +46,7 @@ public class CompraService {
         this.vencimientoRepository = vencimientoRepository;
         this.bolsaRepository = bolsaRepository;
         this.clienteService = clienteService;
+        this.promocionService = promocionService;
     }
 
     @Transactional
@@ -59,6 +63,11 @@ public class CompraService {
         }
 
         Integer puntos = reglaPuntosService.calcularPuntosPorMonto(monto);
+        String categoria = producto.getCategoria();
+        int puntosConPromo = promocionService.calcularPuntosConPromocion(puntos, monto, categoria);
+        if (puntosConPromo != puntos) {
+            puntos = puntosConPromo;
+        }
 
         ParametroVencimiento param = vencimientoRepository.findTopByOrderByFechaFinValidezDesc()
                 .orElse(null);
@@ -99,6 +108,8 @@ public class CompraService {
         resultado.put("puntosGanados", puntos);
         resultado.put("totalCliente", cliente.getPuntosAcumulados());
         resultado.put("nivel", cliente.getNivel());
+        resultado.put("puntosBase", reglaPuntosService.calcularPuntosPorMonto(monto));
+        resultado.put("puntosPromocion", puntos - reglaPuntosService.calcularPuntosPorMonto(monto));
         resultado.put("mensaje", "Compra registrada. Ganaste " + puntos + " puntos!");
         return resultado;
     }

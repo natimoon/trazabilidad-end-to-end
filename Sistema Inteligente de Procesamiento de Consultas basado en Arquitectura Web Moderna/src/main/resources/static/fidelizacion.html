@@ -172,6 +172,7 @@
             <li class="nav-item"><button class="nav-link" data-tab="canje">Canje</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="compras">Compras</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="encuestas">Encuestas</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="promociones">Promociones</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="config">Configuración</button></li>
         </ul>
 
@@ -492,6 +493,44 @@
                             <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarEncuestas()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
                         </div>
                         <div class="card-b" style="max-height:450px;overflow-y:auto;" id="encuestas-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PROMOCIONES ==================== -->
+        <div class="tab-content-section" id="tab-promociones">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="section-card">
+                        <div class="card-h"><span>🏷️</span> Nueva Promoción</div>
+                        <div class="card-b">
+                            <div class="row g-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="prom-nombre" placeholder="Nombre"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="prom-desc" placeholder="Descripción"></div>
+                                <div class="col-4">
+                                    <select class="form-select form-select-sm" id="prom-tipo">
+                                        <option value="MULTIPLICADOR">Multiplicador</option>
+                                        <option value="PUNTOS_EXTRA">Puntos Extra</option>
+                                    </select>
+                                </div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="prom-valor" placeholder="Valor (x2 = 2)" type="number" step="0.1"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="prom-categoria" placeholder="Categoría (opcional)"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="prom-fecha-ini" type="date"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="prom-fecha-fin" type="date"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mt-3" onclick="crearPromocion()">Crear Promoción</button>
+                            <div class="result-box" id="res-promocion"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="section-card">
+                        <div class="card-h">
+                            <span>📋</span> Promociones Activas
+                            <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarPromociones()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
+                        </div>
+                        <div class="card-b" style="max-height:450px;overflow-y:auto;" id="promociones-table"></div>
                     </div>
                 </div>
             </div>
@@ -1173,6 +1212,71 @@ async function crearConcepto() {
     } catch (e) { showResult('res-conceptos', e.message, true); }
 }
 
+// ==================== PROMOCIONES ====================
+async function crearPromocion() {
+    const body = {
+        nombre: document.getElementById('prom-nombre').value.trim(),
+        descripcion: document.getElementById('prom-desc').value.trim(),
+        tipo: document.getElementById('prom-tipo').value,
+        valor: parseFloat(document.getElementById('prom-valor').value),
+        categoria: document.getElementById('prom-categoria').value.trim() || null,
+        fechaInicio: document.getElementById('prom-fecha-ini').value,
+        fechaFin: document.getElementById('prom-fecha-fin').value,
+        activo: true
+    };
+    if (!body.nombre || !body.valor || !body.fechaInicio || !body.fechaFin) {
+        showResult('res-promocion', 'Nombre, valor y fechas obligatorios', true); return;
+    }
+    showLoading('res-promocion');
+    try {
+        const data = await api('/api/promociones', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        showResult('res-promocion', `✅ Promoción #${data.id}: ${data.nombre} (${data.tipo} x${data.valor})`);
+        document.getElementById('prom-nombre').value = '';
+        document.getElementById('prom-desc').value = '';
+        document.getElementById('prom-valor').value = '';
+        document.getElementById('prom-categoria').value = '';
+        listarPromociones();
+    } catch (e) { showResult('res-promocion', e.message, true); }
+}
+
+async function listarPromociones() {
+    try {
+        const data = await api('/api/promociones');
+        const div = document.getElementById('promociones-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;font-size:0.85rem;">Sin promociones</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Valor</th><th>Categoría</th><th>Vigencia</th><th>Estado</th><th>Acción</th></tr>';
+            for (const p of data) {
+                const estado = p.activo ? '<span style="color:#10b981;">✅ Activa</span>' : '<span style="color:#ef4444;">⛔ Inactiva</span>';
+                h += `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.nombre || '-'}</td>
+                    <td>${p.tipo || '-'}</td>
+                    <td><strong>x${p.valor || 0}</strong></td>
+                    <td>${p.categoria || 'Todas'}</td>
+                    <td style="font-size:0.75rem;">${p.fechaInicio || '-'} al ${p.fechaFin || '-'}</td>
+                    <td>${estado}</td>
+                    <td><button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarPromocion(${p.id})">🗑</button></td>
+                </tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) {
+        document.getElementById('promociones-table').innerHTML = '<div style="color:#ef4444;text-align:center;padding:20px;">Error</div>';
+    }
+}
+
+async function eliminarPromocion(id) {
+    if (!confirm(`Eliminar promoción #${id}?`)) return;
+    try { await api(`/api/promociones/${id}`, {method:'DELETE'}); listarPromociones(); }
+    catch(e) { alert('Error: ' + e.message); }
+}
+
 async function listarConceptos() {
     showLoading('res-conceptos');
     try {
@@ -1190,6 +1294,7 @@ listarClientes();
 listarProductosCatalogo();
 listarCanjes();
 listarEncuestas();
+listarPromociones();
 setInterval(cargarDashboard, 30000);
 </script>
 </body>

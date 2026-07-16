@@ -7,6 +7,7 @@ import py.edu.una.politecnica.ecomart.model.Cliente;
 import py.edu.una.politecnica.ecomart.model.EncuestaSatisfaccion;
 import py.edu.una.politecnica.ecomart.repository.BolsaPuntosRepository;
 import py.edu.una.politecnica.ecomart.repository.CabeceraUsoPuntosRepository;
+import py.edu.una.politecnica.ecomart.repository.CanjePuntosRepository;
 import py.edu.una.politecnica.ecomart.repository.ClienteRepository;
 import py.edu.una.politecnica.ecomart.repository.EncuestaSatisfaccionRepository;
 
@@ -22,15 +23,18 @@ public class DashboardService {
     private final ClienteRepository clienteRepository;
     private final BolsaPuntosRepository bolsaRepository;
     private final CabeceraUsoPuntosRepository cabeceraRepository;
+    private final CanjePuntosRepository canjeRepository;
     private final EncuestaSatisfaccionRepository encuestaRepository;
 
     public DashboardService(ClienteRepository clienteRepository,
                             BolsaPuntosRepository bolsaRepository,
                             CabeceraUsoPuntosRepository cabeceraRepository,
+                            CanjePuntosRepository canjeRepository,
                             EncuestaSatisfaccionRepository encuestaRepository) {
         this.clienteRepository = clienteRepository;
         this.bolsaRepository = bolsaRepository;
         this.cabeceraRepository = cabeceraRepository;
+        this.canjeRepository = canjeRepository;
         this.encuestaRepository = encuestaRepository;
     }
 
@@ -40,6 +44,7 @@ public class DashboardService {
         List<Cliente> clientes = clienteRepository.findAll();
         List<BolsaPuntos> bolsas = bolsaRepository.findAll();
         List<CabeceraUsoPuntos> usos = cabeceraRepository.findAll();
+        List<py.edu.una.politecnica.ecomart.model.CanjePuntos> canjes = canjeRepository.findAll();
         List<EncuestaSatisfaccion> encuestas = encuestaRepository.findAll();
 
         int totalClientes = clientes.size();
@@ -55,7 +60,7 @@ public class DashboardService {
         int totalPuntosVencidos = bolsas.stream()
                 .filter(b -> Boolean.TRUE.equals(b.getVencida()) && b.getSaldoPuntos() != null)
                 .mapToInt(BolsaPuntos::getSaldoPuntos).sum();
-        int totalCanjes = usos.size();
+        int totalCanjes = usos.size() + canjes.size();
 
         long bronce = clientes.stream().filter(c -> "Bronce".equals(c.getNivel())).count();
         long plata = clientes.stream().filter(c -> "Plata".equals(c.getNivel())).count();
