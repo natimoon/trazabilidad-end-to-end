@@ -173,6 +173,7 @@
             <li class="nav-item"><button class="nav-link" data-tab="compras">Compras</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="encuestas">Encuestas</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="promociones">Promociones</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="gamificacion">🎮 Gamificación</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="config">Configuración</button></li>
         </ul>
 
@@ -531,6 +532,59 @@
                             <button class="btn btn-outline-light btn-sm ms-auto" onclick="listarPromociones()" style="border-color:rgba(255,255,255,0.1);">🔄</button>
                         </div>
                         <div class="card-b" style="max-height:450px;overflow-y:auto;" id="promociones-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== GAMIFICACIÓN ==================== -->
+        <div class="tab-content-section" id="tab-gamificacion">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="section-card">
+                        <div class="card-h"><span>🏆</span> Ranking de Clientes</div>
+                        <div class="card-b">
+                            <button class="btn btn-outline-light btn-custom w-100 mb-3" onclick="cargarRanking()" style="border-color:rgba(255,255,255,0.1);">📊 Ver Ranking</button>
+                            <div style="max-height:400px;overflow-y:auto;" id="ranking-table"></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="card-h"><span>📌</span> Mis Insignias</div>
+                        <div class="card-b">
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="gam-cliente-id" placeholder="ID Cliente" type="number" style="width:120px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="verInsigniasCliente()">Ver</button>
+                                <button class="btn btn-outline-light btn-sm" onclick="verificarProgreso()" style="border-color:rgba(16,185,129,0.3);color:#10b981;">✅ Verificar Desafíos</button>
+                            </div>
+                            <div id="insignias-cliente" style="font-size:0.85rem;color:#94a3b8;">Ingrese ID de cliente</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="section-card">
+                        <div class="card-h"><span>🎯</span> Desafíos Activos</div>
+                        <div class="card-b">
+                            <div class="row g-2 mb-2">
+                                <div class="col-6"><input class="form-control form-control-sm" id="gam-nombre" placeholder="Nombre"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="gam-desc" placeholder="Descripción"></div>
+                                <div class="col-4">
+                                    <select class="form-select form-select-sm" id="gam-tipo">
+                                        <option value="COMPRAS_CANTIDAD">Cant. Compras</option>
+                                        <option value="COMPRAS_MONTO">Monto Compras</option>
+                                        <option value="CANJES">Canjes</option>
+                                        <option value="PUNTOS_ACUMULADOS">Puntos Acum.</option>
+                                    </select>
+                                </div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="gam-objetivo" placeholder="Objetivo" type="number"></div>
+                                <div class="col-4"><input class="form-control form-control-sm" id="gam-recompensa" placeholder="Pts recompensa" type="number"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="gam-insignia" placeholder="Insignia (opcional)"></div>
+                                <div class="col-3"><input class="form-control form-control-sm" id="gam-fecha-ini" type="date"></div>
+                                <div class="col-3"><input class="form-control form-control-sm" id="gam-fecha-fin" type="date"></div>
+                            </div>
+                            <button class="btn btn-success btn-custom w-100 mb-2" onclick="crearDesafio()">Crear Desafío</button>
+                            <div id="desafios-table"></div>
+                            <div class="result-box" id="res-gam"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1277,6 +1331,108 @@ async function eliminarPromocion(id) {
     catch(e) { alert('Error: ' + e.message); }
 }
 
+// ==================== GAMIFICACIÓN ====================
+async function cargarRanking() {
+    try {
+        const data = await api('/api/gamificacion/ranking?limite=20');
+        const div = document.getElementById('ranking-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">Sin datos</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>#</th><th>Cliente</th><th>Nivel</th><th>Puntos</th><th>Insignias</th></tr>';
+            for (const r of data) {
+                const medal = r.posicion === 1 ? '🥇' : r.posicion === 2 ? '🥈' : r.posicion === 3 ? '🥉' : `#${r.posicion}`;
+                h += `<tr><td><strong>${medal}</strong></td><td>${r.nombre}</td><td>${r.nivel || '-'}</td><td>${r.puntos}</td><td>${r.insignias || 0}</td></tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) { document.getElementById('ranking-table').innerHTML = '<div style="color:#ef4444;">Error</div>'; }
+}
+
+async function verInsigniasCliente() {
+    const id = document.getElementById('gam-cliente-id').value;
+    if (!id) { document.getElementById('insignias-cliente').textContent = 'Ingrese ID'; return; }
+    try {
+        const data = await api(`/api/gamificacion/insignias/cliente/${id}`);
+        const div = document.getElementById('insignias-cliente');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<span style="color:#94a3b8;">Sin insignias aún</span>';
+        } else {
+            div.innerHTML = data.map(i => `<span style="display:inline-block;margin:4px;padding:6px 12px;background:rgba(16,185,129,0.1);border-radius:8px;border:1px solid rgba(16,185,129,0.2);">${i.icono || '🏅'} ${i.nombre}</span>`).join('');
+        }
+    } catch(e) { document.getElementById('insignias-cliente').textContent = 'Error: ' + e.message; }
+}
+
+async function verificarProgreso() {
+    const id = document.getElementById('gam-cliente-id').value;
+    if (!id) { showResult('res-gam', 'Ingrese ID cliente', true); return; }
+    showLoading('res-gam');
+    try {
+        const data = await api(`/api/gamificacion/verificar/${id}`, {method:'POST'});
+        let msg = '';
+        for (const r of data.resultados) {
+            const emoji = r.completado ? '✅' : '⏳';
+            msg += `${emoji} ${r.desafio}: ${r.progreso}/${r.objetivo}\n`;
+        }
+        if (data.puntosGanados > 0) msg += `\n🎁 +${data.puntosGanados} puntos por desafíos completados!`;
+        if (data.insigniasGanadas.length > 0) msg += `\n🏅 Insignias: ${data.insigniasGanadas.join(', ')}`;
+        showResult('res-gam', msg || 'Sin desafíos activos');
+        verInsigniasCliente();
+        cargarDashboard();
+    } catch(e) { showResult('res-gam', e.message, true); }
+}
+
+async function listarDesafios() {
+    try {
+        const data = await api('/api/gamificacion/desafios');
+        const div = document.getElementById('desafios-table');
+        if (!data || data.length === 0) {
+            div.innerHTML = '<div style="color:#64748b;text-align:center;padding:10px;font-size:0.8rem;">Sin desafíos</div>';
+        } else {
+            let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Obj</th><th>Recomp</th><th>Vigencia</th><th>Acción</th></tr>';
+            for (const d of data) {
+                h += `<tr><td>${d.id}</td><td>${d.nombre}</td><td>${d.tipo}</td><td>${d.objetivo}</td><td>${d.puntosRecompensa || 0} pts</td><td style="font-size:0.7rem;">${d.fechaInicio || '-'} al ${d.fechaFin || '-'}</td>
+                    <td><button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;" onclick="eliminarDesafio(${d.id})">🗑</button></td></tr>`;
+            }
+            h += '</table>';
+            div.innerHTML = h;
+        }
+    } catch(e) { /* ignore */ }
+}
+
+async function crearDesafio() {
+    const body = {
+        nombre: document.getElementById('gam-nombre').value.trim(),
+        descripcion: document.getElementById('gam-desc').value.trim(),
+        tipo: document.getElementById('gam-tipo').value,
+        objetivo: parseInt(document.getElementById('gam-objetivo').value),
+        puntosRecompensa: parseInt(document.getElementById('gam-recompensa').value) || 0,
+        insigniaRecompensa: document.getElementById('gam-insignia').value.trim() || null,
+        fechaInicio: document.getElementById('gam-fecha-ini').value,
+        fechaFin: document.getElementById('gam-fecha-fin').value,
+        activo: true
+    };
+    if (!body.nombre || !body.objetivo || !body.fechaInicio || !body.fechaFin) {
+        showResult('res-gam', 'Nombre, objetivo y fechas obligatorios', true); return;
+    }
+    showLoading('res-gam');
+    try {
+        await api('/api/gamificacion/desafios', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+        showResult('res-gam', '✅ Desafío creado');
+        document.getElementById('gam-nombre').value = ''; document.getElementById('gam-desc').value = '';
+        document.getElementById('gam-objetivo').value = ''; document.getElementById('gam-recompensa').value = '';
+        document.getElementById('gam-insignia').value = '';
+        listarDesafios();
+    } catch(e) { showResult('res-gam', e.message, true); }
+}
+
+async function eliminarDesafio(id) {
+    if (!confirm(`Eliminar desafío #${id}?`)) return;
+    try { await api(`/api/gamificacion/desafios/${id}`, {method:'DELETE'}); listarDesafios(); }
+    catch(e) { alert('Error: ' + e.message); }
+}
+
 async function listarConceptos() {
     showLoading('res-conceptos');
     try {
@@ -1295,6 +1451,7 @@ listarProductosCatalogo();
 listarCanjes();
 listarEncuestas();
 listarPromociones();
+listarDesafios();
 setInterval(cargarDashboard, 30000);
 </script>
 </body>
