@@ -255,6 +255,7 @@
                                 </div>
                                 <div class="col-6"><input class="form-control form-control-sm" id="cli-email" placeholder="Email"></div>
                                 <div class="col-6"><input class="form-control form-control-sm" id="cli-tel" placeholder="Teléfono"></div>
+                                <div class="col-6"><input class="form-control form-control-sm" id="cli-ciudad" placeholder="Ciudad" value="Asunción"></div>
                                 <div class="col-6"><input class="form-control form-control-sm" id="cli-nac" placeholder="Nacionalidad" value="Paraguaya"></div>
                                 <div class="col-6"><input class="form-control form-control-sm" id="cli-fecha" type="date"></div>
                             </div>
@@ -275,6 +276,10 @@
                                 <input class="form-control form-control-sm" id="seg-puntos-min" placeholder="Puntos min" type="number" style="width:100px;">
                                 <input class="form-control form-control-sm" id="seg-puntos-max" placeholder="Puntos max" type="number" style="width:100px;">
                                 <button class="btn btn-outline-light btn-sm" onclick="segmentarRangoPuntos()">Por puntos</button>
+                            </div>
+                            <div class="d-flex gap-2 mb-2">
+                                <input class="form-control form-control-sm" id="seg-ciudad" placeholder="Ciudad" value="Asunción" style="width:140px;">
+                                <button class="btn btn-outline-light btn-sm" onclick="segmentarCiudad()">Por ciudad</button>
                             </div>
                             <div class="d-flex gap-2 mb-2">
                                 <input class="form-control form-control-sm" id="seg-nac" placeholder="Nacionalidad" value="Paraguaya" style="width:140px;">
@@ -585,7 +590,7 @@ async function listarClientes() {
             div.innerHTML = '<div style="color:#64748b;text-align:center;padding:20px;">No hay clientes</div>';
             return;
         }
-        let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Doc</th><th>Email</th><th>Nivel</th><th>Puntos</th><th>Acción</th></tr>';
+        let h = '<table class="table-custom"><tr><th>ID</th><th>Nombre</th><th>Doc</th><th>Email</th><th>Ciudad</th><th>Nivel</th><th>Puntos</th><th>Acción</th></tr>';
         for (const c of data) {
             const nivelClass = `badge-nivel badge-${(c.nivel||'bronce').toLowerCase()}`;
             h += `<tr>
@@ -593,6 +598,7 @@ async function listarClientes() {
                 <td>${c.nombre || ''} ${c.apellido || ''}</td>
                 <td style="font-size:0.75rem;">${c.nroDocumento || '-'}</td>
                 <td style="font-size:0.75rem;">${c.email || '-'}</td>
+                <td style="font-size:0.75rem;">${c.ciudad || '-'}</td>
                 <td><span class="${nivelClass}">${c.nivel || 'Bronce'}</span></td>
                 <td><strong>${c.puntosAcumulados ?? 0}</strong></td>
                 <td><button class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;border:none;padding:2px 8px;font-size:0.75rem;" onclick="eliminarCliente(${c.id})">🗑</button></td>
@@ -613,6 +619,7 @@ async function crearCliente() {
         tipoDocumento: document.getElementById('cli-tipo-doc').value,
         email: document.getElementById('cli-email').value.trim(),
         telefono: document.getElementById('cli-tel').value.trim(),
+        ciudad: document.getElementById('cli-ciudad').value.trim(),
         nacionalidad: document.getElementById('cli-nac').value.trim(),
         fechaNacimiento: document.getElementById('cli-fecha').value || null
     };
@@ -629,6 +636,7 @@ async function crearCliente() {
         document.getElementById('cli-doc').value = '';
         document.getElementById('cli-email').value = '';
         document.getElementById('cli-tel').value = '';
+        document.getElementById('cli-ciudad').value = 'Asunción';
         listarClientes();
         cargarDashboard();
     } catch (e) { showResult('res-crear-cliente', e.message, true); }
@@ -675,6 +683,19 @@ async function segmentarNacionalidad() {
         el.className = 'result-box show';
         el.style.color = '#10b981';
         el.textContent = `✅ ${data.length} cliente(s) de ${nac}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
+    } catch (e) { showResult('res-segmentar', e.message, true); }
+}
+
+async function segmentarCiudad() {
+    const ciudad = document.getElementById('seg-ciudad').value.trim();
+    if (!ciudad) { showResult('res-segmentar', 'Ingrese ciudad', true); return; }
+    showLoading('res-segmentar');
+    try {
+        const data = await api(`/api/clientes/segmentar/ciudad?ciudad=${encodeURIComponent(ciudad)}`);
+        const el = document.getElementById('res-segmentar');
+        el.className = 'result-box show';
+        el.style.color = '#10b981';
+        el.textContent = `✅ ${data.length} cliente(s) de ${ciudad}: ` + data.map(c => `#${c.id} ${c.nombre}`).join(', ') || '(ninguno)';
     } catch (e) { showResult('res-segmentar', e.message, true); }
 }
 

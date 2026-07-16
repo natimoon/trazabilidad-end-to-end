@@ -26,4 +26,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findByRangoPuntos(@Param("min") int min, @Param("max") int max);
 
     List<Cliente> findByNacionalidad(String nacionalidad);
+
+    List<Cliente> findByCiudadContainingIgnoreCase(String ciudad);
 }

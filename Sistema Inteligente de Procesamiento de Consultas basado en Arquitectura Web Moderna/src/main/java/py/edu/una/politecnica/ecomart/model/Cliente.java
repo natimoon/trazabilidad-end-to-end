@@ -19,6 +19,7 @@ public class Cliente {
     private String apellido;
     private String nroDocumento;
     private String tipoDocumento;
+    private String ciudad;
     private String nacionalidad;
     private String email;
     private String telefono;
@@ -46,6 +47,8 @@ public class Cliente {
     public void setNroDocumento(String nroDocumento) { this.nroDocumento = nroDocumento; }
     public String getTipoDocumento() { return tipoDocumento; }
     public void setTipoDocumento(String tipoDocumento) { this.tipoDocumento = tipoDocumento; }
+    public String getCiudad() { return ciudad; }
+    public void setCiudad(String ciudad) { this.ciudad = ciudad; }
     public String getNacionalidad() { return nacionalidad; }
     public void setNacionalidad(String nacionalidad) { this.nacionalidad = nacionalidad; }
     public String getEmail() { return email; }

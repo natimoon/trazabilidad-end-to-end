@@ -40,6 +40,7 @@ public class ClienteService {
         cliente.setApellido(actualizado.getApellido());
         cliente.setNroDocumento(actualizado.getNroDocumento());
         cliente.setTipoDocumento(actualizado.getTipoDocumento());
+        cliente.setCiudad(actualizado.getCiudad());
         cliente.setNacionalidad(actualizado.getNacionalidad());
         cliente.setEmail(actualizado.getEmail());
         cliente.setTelefono(actualizado.getTelefono());
@@ -74,6 +75,10 @@ public class ClienteService {
 
     public List<Cliente> segmentarPorNacionalidad(String nacionalidad) {
         return clienteRepository.findByNacionalidad(nacionalidad);
+    }
+
+    public List<Cliente> segmentarPorCiudad(String ciudad) {
+        return clienteRepository.findByCiudadContainingIgnoreCase(ciudad);
     }
 
     public List<Cliente> obtenerReferidos(Long clienteId) {
